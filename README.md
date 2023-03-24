@@ -10,8 +10,11 @@ This example includes:
 
 ## Useful commands
 
+ * `virtualenv --python python3.7 venv` create python3.7 virtual environment
+ * `source venv/bin/activate`   activate venv
  * `pip install -r requirements.txt`    install requirements
  * `cdk bootstrap`   initialize assets before deploy
  * `cdk synth`       emits the synthesized CloudFormation template
  * `cdk deploy`      deploy this stack to your default AWS account/region
  * `aws ssm start-session --target i-xxxxxxxxx` remote session for shell access
+ * `deactivate` deactivate venv

@@ -1,18 +1,16 @@
 import os.path
 import sys
 
+from constructs import Construct
 from aws_cdk.aws_s3_assets import Asset
-
 from aws_cdk import (
     aws_ec2 as ec2,
     aws_iam as iam,
-    App, Stack
+    App, Stack, CfnOutput
 )
 
-from constructs import Construct
-
 dirname = os.path.dirname(__file__)
-instname = "handy"
+instName = "mySQL-benchmarking"
 
 
 class EC2InstanceStack(Stack):
@@ -62,7 +60,7 @@ class EC2InstanceStack(Stack):
             machine_image=amzn_linux,
             vpc = vpc,
             security_group=sg,
-            #block_devices=[ec2.BlockDevice(device_name="/dev/sda1",volume=ec2.BlockDeviceVolume.ebs(30))],
+            block_devices=[ec2.BlockDevice(device_name="/dev/sda1",volume=ec2.BlockDeviceVolume.ebs(30))],
             role = role
             )
 
@@ -79,6 +77,12 @@ class EC2InstanceStack(Stack):
             )
         asset.grant_read(instance.role)
 
+        #Cloudformation Outputs
+        CfnOutput(self, 'vpcId', value=vpc.vpc_id, export_name='ExportedVpcId')
+        CfnOutput(self, "instId", value=instance.instance_id, export_name='ExportedInstId')
+        CfnOutput(self, "sgId", value=sg.security_group_id, export_name='ExportedSgId')
+        
+
 app = App()
-EC2InstanceStack(app, instname)
+EC2InstanceStack(app, instName)
 app.synth()
