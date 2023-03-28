@@ -1,4 +1,4 @@
-import os.path
+import os
 import sys
 
 from constructs import Construct
@@ -6,12 +6,14 @@ from aws_cdk.aws_s3_assets import Asset
 from aws_cdk import (
     aws_ec2 as ec2,
     aws_iam as iam,
-    App, Stack, CfnOutput
+    aws_cloud9 as cloud9,
+    App, Stack, CfnOutput 
 )
 
 dirname = os.path.dirname(__file__)
-instName = "mySQL-benchmarking"
+instName = "mySQLBenchmarking"
 
+instType = os.getenv("MYSQL_INST_TYPE", "t3.nano")
 
 class EC2InstanceStack(Stack):
 
@@ -52,13 +54,23 @@ class EC2InstanceStack(Stack):
             peer=ec2.Peer.ipv4(vpc.vpc_cidr_block),
             connection=ec2.Port.tcp(443),
             description="HTTPS",
-        )        
+        )
+
+        #cloud9 env
+        # cloud9.Ec2Environment(self, "Cloud9Env", vpc=vpc)
+        
+        # c9env = cloud9.Ec2Environment(self, "Cloud9Env",
+        #     vpc=vpc,
+        #     subnet_selection=ec2.SubnetSelection(
+        #         subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT
+        #     )
+        # )
 
         # Instance
         instance = ec2.Instance(self, "Instance",
-            instance_type=ec2.InstanceType("t3.nano"),
+            instance_type=ec2.InstanceType(instType),
             machine_image=amzn_linux,
-            vpc = vpc,
+            vpc=vpc,
             security_group=sg,
             block_devices=[ec2.BlockDevice(device_name="/dev/sda1",volume=ec2.BlockDeviceVolume.ebs(30))],
             role = role
@@ -78,10 +90,12 @@ class EC2InstanceStack(Stack):
         asset.grant_read(instance.role)
 
         #Cloudformation Outputs
+        #CfnOutput(self, "c9Url", value=c9env.ide_url)
         CfnOutput(self, 'vpcId', value=vpc.vpc_id, export_name='ExportedVpcId')
         CfnOutput(self, "instId", value=instance.instance_id, export_name='ExportedInstId')
         CfnOutput(self, "sgId", value=sg.security_group_id, export_name='ExportedSgId')
         
+            
 
 app = App()
 EC2InstanceStack(app, instName)
