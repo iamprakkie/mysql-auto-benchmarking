@@ -14,6 +14,9 @@ dirname = os.path.dirname(__file__)
 mySQLinstName = "mySQLBenchmarking"
 
 instType = os.getenv("MYSQL_INST_TYPE", "t3.nano")
+volSize=int(os.getenv("MYSQL_VOL_SIZE", 50))
+volType=ec2.EbsDeviceVolumeType.IO1
+volIOPS=int(os.getenv("MYSQL_VOL_IOPS", 150))
 
 class EC2InstanceStack(Stack):
 
@@ -86,31 +89,31 @@ class EC2InstanceStack(Stack):
             vpc=vpc,
             # vpc_subnets=ec2.SubnetSelection( subnet_group_name=subnet_id),
             security_group=sg_mysql,
-            # block_devices=[
-            # ec2.BlockDevice(device_name="/dev/xvda",volume=ec2.BlockDeviceVolume.ebs(30),volume_type="GP3"),
-            # ec2.BlockDevice(device_name="/dev/sda1",volume=ec2.BlockDeviceVolume.ebs(50))
-            # ],
+            block_devices=[
+            ec2.BlockDevice(device_name="/dev/xvda",volume=ec2.BlockDeviceVolume.ebs(30,delete_on_termination=True,volume_type=ec2.EbsDeviceVolumeType.GP3)),
+            ec2.BlockDevice(device_name="/dev/sda1",volume=ec2.BlockDeviceVolume.ebs(volSize,delete_on_termination=True,iops=volIOPS,volume_type=volType))
+            ],
             role = role
             )
 
         # ec2.Instance has no property of BlockDeviceMappings, add via lower layer cdk api:
-        instance.instance.add_property_override("BlockDeviceMappings", [{
-            "DeviceName": "/dev/xvda",
-            "Ebs": {
-                "VolumeSize": "30",
-                "VolumeType": "gp3",
-                "DeleteOnTermination": "true"
-            }
-        }, {
-            "DeviceName": "/dev/sda1",
-            "Ebs": {
-                "VolumeSize": "50",
-                "VolumeType": "io1",
-                "Iops": "150",
-                "DeleteOnTermination": "true"
-            }
-        }
-        ])
+        # instance.instance.add_property_override("BlockDeviceMappings", [{
+        #     "DeviceName": "/dev/xvda",
+        #     "Ebs": {
+        #         "VolumeSize": "30",
+        #         "VolumeType": "gp3",
+        #         "DeleteOnTermination": "true"
+        #     }
+        # }, {
+        #     "DeviceName": "/dev/sda1",
+        #     "Ebs": {
+        #         "VolumeSize": "50",
+        #         "VolumeType": "io1",
+        #         "Iops": "150",
+        #         "DeleteOnTermination": "true"
+        #     }
+        # }
+        # ])
 
         # Script in S3 as Asset
         asset = Asset(self, "Asset", path=os.path.join(dirname, "configure.sh"))
