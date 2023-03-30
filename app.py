@@ -10,7 +10,7 @@ from aws_cdk import (
 )
 
 dirname = os.path.dirname(__file__)
-mySQLinstName = "mySQLBenchmarking"
+mySQLInstName = "mySQLBenchmarking"
 
 instType = os.getenv("MYSQL_INST_TYPE", "t3.nano")
 volSize=int(os.getenv("MYSQL_VOL_SIZE", 50))
@@ -151,14 +151,11 @@ class EC2InstanceStack(Stack):
         asset.grant_read(mySQLInstance.role)
 
         #Cloudformation Outputs
-        # CfnOutput(self, "c9Url", value=c9env.attr_arn)
         CfnOutput(self, 'vpcId', value=vpc.vpc_id, export_name='ExportedVpcId')
         CfnOutput(self, "dbt2InstId", value=dbt2Instance.instance_id, export_name='ExportedDBT2InstId')
         CfnOutput(self, "mySQLInstId", value=mySQLInstance.instance_id, export_name='ExportedMySQLInstId')
         #CfnOutput(self, "sgId", value=sg_mysql.security_group_id, export_name='ExportedSgId')
         
-            
-
 app = App()
-EC2InstanceStack(app, mySQLinstName)
+EC2InstanceStack(app, mySQLInstName)
 app.synth()
