@@ -1,18 +1,21 @@
 import os
 import sys
+import json
 
 from constructs import Construct
 from aws_cdk.aws_s3_assets import Asset
 from aws_cdk import (
     aws_ec2 as ec2,
     aws_iam as iam,
+    aws_secretsmanager as secretsmanager,
+    aws_kms as kms,
     App, Stack, CfnOutput 
 )
 
 dirname = os.path.dirname(__file__)
 mySQLInstName = "mySQLBenchmarking"
 
-instType = os.getenv("MYSQL_INST_TYPE", "t3.nano")
+instType = os.getenv("MYSQL_INST_TYPE", "t3.medium")
 volSize=int(os.getenv("MYSQL_VOL_SIZE", 50))
 volType=ec2.EbsDeviceVolumeType.IO1
 volIOPS=int(os.getenv("MYSQL_VOL_IOPS", 150))
@@ -46,9 +49,13 @@ class EC2InstanceStack(Stack):
             storage=ec2.AmazonLinuxStorage.GENERAL_PURPOSE
             )
 
-        # Instance Role and SSM Managed Policy
-        role = iam.Role(self, "InstanceSSM", assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"))
-        role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMManagedInstanceCore"))
+        # Instance Role and SSM Managed Policy for DBT2 instance
+        mySQLInstRole = iam.Role(self, "MySQLInstanceSSM", assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"))
+        mySQLInstRole.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMManagedInstanceCore"))
+
+        # Instance Role and SSM Managed Policy for DBT2 instance
+        dbt2InstRole = iam.Role(self, "DBT2InstanceSSM", assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"))
+        dbt2InstRole.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMManagedInstanceCore"))
 
         #Security Group for DBT2 instance
         sg_dbt2 = ec2.SecurityGroup(
@@ -77,33 +84,6 @@ class EC2InstanceStack(Stack):
             description="MySQL access"
         )
 
-        # DBT2 Instance
-        dbt2Instance = ec2.Instance(self, "DBT2Instance",
-            instance_type=ec2.InstanceType(instance_type_identifier=instType),
-            machine_image=amzn_linux,
-            vpc=vpc,
-            vpc_subnets=ec2.SubnetSelection(subnets=[ec2.Subnet.from_subnet_attributes(self,"publicSubnet",subnet_id=publicSubnetId,availability_zone=az_lookup[publicSubnetId])]),
-            security_group=sg_dbt2,
-            block_devices=[
-                ec2.BlockDevice(device_name="/dev/xvda",volume=ec2.BlockDeviceVolume.ebs(30,delete_on_termination=True,volume_type=ec2.EbsDeviceVolumeType.GP3)),
-                ec2.BlockDevice(device_name="/dev/sda1",volume=ec2.BlockDeviceVolume.ebs(100,delete_on_termination=True,volume_type=ec2.EbsDeviceVolumeType.GP3))
-            ],
-            role = role
-            )
-        
-        # Script in S3 as Asset
-        asset = Asset(self, "dbt2Asset", path=os.path.join(dirname, "dbt2-instance-user-data.sh"))
-        local_path = dbt2Instance.user_data.add_s3_download_command(
-            bucket=asset.bucket,
-            bucket_key=asset.s3_object_key
-        )
-
-        # Userdata executes script from S3
-        dbt2Instance.user_data.add_execute_file_command(
-            file_path=local_path
-            )
-        asset.grant_read(dbt2Instance.role)        
-
         # mySQL Instance
         mySQLInstance = ec2.Instance(self, "MySQLInstance",
             instance_type=ec2.InstanceType(instance_type_identifier=instType),
@@ -115,7 +95,7 @@ class EC2InstanceStack(Stack):
                 ec2.BlockDevice(device_name="/dev/xvda",volume=ec2.BlockDeviceVolume.ebs(30,delete_on_termination=True,volume_type=ec2.EbsDeviceVolumeType.GP3)),
                 ec2.BlockDevice(device_name="/dev/sda1",volume=ec2.BlockDeviceVolume.ebs(volSize,delete_on_termination=True,iops=volIOPS,volume_type=volType))
             ],
-            role = role
+            role = mySQLInstRole
             )
 
         # ec2.Instance has no property of BlockDeviceMappings, add via lower layer cdk api:
@@ -148,12 +128,53 @@ class EC2InstanceStack(Stack):
         mySQLInstance.user_data.add_execute_file_command(
             file_path=local_path
             )
-        asset.grant_read(mySQLInstance.role)
+        asset.grant_read(mySQLInstance.role)        
+
+        # DBT2 Instance
+        dbt2Instance = ec2.Instance(self, "DBT2Instance",
+            instance_type=ec2.InstanceType(instance_type_identifier=instType),
+            machine_image=amzn_linux,
+            vpc=vpc,
+            vpc_subnets=ec2.SubnetSelection(subnets=[ec2.Subnet.from_subnet_attributes(self,"publicSubnet",subnet_id=publicSubnetId,availability_zone=az_lookup[publicSubnetId])]),
+            security_group=sg_dbt2,
+            block_devices=[
+                ec2.BlockDevice(device_name="/dev/xvda",volume=ec2.BlockDeviceVolume.ebs(30,delete_on_termination=True,volume_type=ec2.EbsDeviceVolumeType.GP3)),
+                ec2.BlockDevice(device_name="/dev/sda1",volume=ec2.BlockDeviceVolume.ebs(100,delete_on_termination=True,volume_type=ec2.EbsDeviceVolumeType.GP3))
+            ],
+            role = dbt2InstRole
+            )
+        
+        # Script in S3 as Asset
+        asset = Asset(self, "dbt2Asset", path=os.path.join(dirname, "dbt2-instance-user-data.sh"))
+        local_path = dbt2Instance.user_data.add_s3_download_command(
+            bucket=asset.bucket,
+            bucket_key=asset.s3_object_key
+        )
+
+        # Userdata executes script from S3
+        dbt2Instance.user_data.add_execute_file_command(
+            file_path=local_path
+            )
+        asset.grant_read(dbt2Instance.role)
+
+        mysqlRootkey = kms.Key(self, "MySQLRootKMS")
+        mysqlBenchmarkerkey = kms.Key(self, "MySQLBenchmarkerKMS")
+        mysql_root_secret = secretsmanager.Secret(self, "MySQLRootSecret", encryption_key=mysqlRootkey)
+        mysql_benchmarker_secret = secretsmanager.Secret(self, "MySQLBenchmarkerSecret", encryption_key=mysqlBenchmarkerkey)
+        
+        mysql_root_secret.grant_read(mySQLInstance.role)
+        mysql_benchmarker_secret.grant_read(mySQLInstance.role)
+        mysql_benchmarker_secret.grant_read(dbt2Instance.role)
 
         #Cloudformation Outputs
-        CfnOutput(self, 'vpcId', value=vpc.vpc_id, export_name='ExportedVpcId')
-        CfnOutput(self, "dbt2InstId", value=dbt2Instance.instance_id, export_name='ExportedDBT2InstId')
+        #CfnOutput(self, 'vpcId', value=vpc.vpc_id, export_name='ExportedVpcId')
         CfnOutput(self, "mySQLInstId", value=mySQLInstance.instance_id, export_name='ExportedMySQLInstId')
+        CfnOutput(self, "mySQLPrivIP", value=mySQLInstance.instance_private_ip, export_name='ExportedMySQLPrivIP')
+        CfnOutput(self, "dbt2InstId", value=dbt2Instance.instance_id, export_name='ExportedDBT2InstId')
+        CfnOutput(self, "dbt2PrivIP", value=dbt2Instance.instance_private_ip, export_name='ExportedDBT2PrivIP')        
+        CfnOutput(self, "mysqlRootSecret", value=mysql_root_secret.secret_name, export_name='ExportedMySQLRootSecret')
+        CfnOutput(self, "mysqlBenchmarkerSecret", value=mysql_benchmarker_secret.secret_name, export_name='ExportedMySQLBenchmarkerSecret')
+        CfnOutput(self,"mysqlRegion",value=self.region, export_name='ExportedMySQLRegion')
         #CfnOutput(self, "sgId", value=sg_mysql.security_group_id, export_name='ExportedSgId')
         
 app = App()
