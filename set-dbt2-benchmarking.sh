@@ -1,22 +1,38 @@
 #!/bin/bash
 set -e
 
-#get required stack output
-MYSQL_REGION=$(aws cloudformation describe-stacks --query "Stacks[?StackName=='mySQLBenchmarking'][].Outputs[?OutputKey=='mysqlRegion'].OutputValue" --output text)
-ROOT_SECRET_ID=$(aws cloudformation describe-stacks --query "Stacks[?StackName=='mySQLBenchmarking'][].Outputs[?OutputKey=='mysqlRootSecret'].OutputValue" --output text)
-BENCHMARKER_SECRET_ID=$(aws cloudformation describe-stacks --query "Stacks[?StackName=='mySQLBenchmarking'][].Outputs[?OutputKey=='mysqlBenchmarkerSecret'].OutputValue" --output text)
+log() {
+  echo
+  echo -e "\e[37;42m$1\e[0m"
+}
 
-#get new passwords from secret
-ROOT_PWD=$(aws secretsmanager get-secret-value --region $MYSQL_REGION --secret-id $ROOT_SECRET_ID --query SecretString --output text)
+MYSQL_PATH=$(which mysql)
+MYSQL_DIR=$(dirname $mysql_path)
+
+MYSQL_HOST_IP=$(aws cloudformation describe-stacks --query "Stacks[?StackName=='mySQLBenchmarking'][].Outputs[?OutputKey=='mySQLPrivIP'].OutputValue" --output text)
 BENCHMARKER_PWD=$(aws secretsmanager get-secret-value --region $MYSQL_REGION --secret-id $BENCHMARKER_SECRET_ID --query SecretString --output text)
 
-export TEMP_PASS=`grep 'temporary password' /var/log/mysqld.log|awk '{print $13}'`
-echo "ALTER USER 'root'@'localhost' IDENTIFIED BY '$ROOT_PWD';" > /root/my.sql
-#echo "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '$ROOT_PWD';" > /root/my.sql
-echo "GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' WITH GRANT OPTION;" >> /root/my.sql
-echo "CREATE USER 'benchmarker'@'%' IDENTIFIED BY '$BENCHMARKER_PWD';" >> /root/my.sql
-echo "GRANT ALL PRIVILEGES ON *.* TO 'benchmarker'@'%' WITH GRANT OPTION;" >> /root/my.sql
-echo "FLUSH PRIVILEGES;" >> /root/my.sql
-sleep 3
-mysql --connect-expired-password -u root --password="$TEMP_PASS" mysql < /root/my.sql
-rm -fr /root/my.sql
+#cp altered_mysql_load_sp.sh ~/dbt2/dbt2-0.37.50.16/scripts/mysql/mysql_load_sp.sh
+#cp altered_mysql_load_db.sh ~/dbt2/dbt2-0.37.50.16/scripts/mysql/mysql_load_db.sh
+
+log "Generating data..."
+mkdir -p ~/dbt2/data
+~/dbt2/dbt2-0.37.50.16/src/datagen -w 20 -d ~/dbt2/data --mysql
+
+# convert customer data to UTF-8 (utf8mb4 is the default in MySQL 8.0)
+log "Converting to UTF-8..."
+for filename in `find ~/dbt2/data  -type f -name \*.data`; do
+    echo $filename
+    mv $filename $filename.bak
+    iconv -f ISO-8859-1 -t UTF-8 $filename.bak -o $filename
+    rm $filename.bak
+done
+
+log "Loading data into dbt2 database"
+~/dbt2/dbt2-0.37.50.16/scripts/mysql/mysql_load_db.sh --local --path ~/dbt2/data --mysql-path $MYSQL_PATH --database dbt2 --host $MYSQL_HOST_IP --user benchmarker --password $BENCHMARKER_PWD
+
+log "Loading stored procedures into dbt2 database"
+~/dbt2/dbt2-0.37.50.16//mysql_load_sp.sh --client-path $MYSQL_DIR --sp-path ~/dbt2/dbt2-0.37.50.16/storedproc/mysql --host $MYSQL_HOST_IP --user benchmarker --password $BENCHMARKER_PWD
+
+log "Benchmarking.."
+./run_mysql.sh --connections 20 --time 300 --warehouses 20 --zero-delay --host $MYSQL_HOST_IP --user benchmarker --password $BENCHMARKER_PWD
