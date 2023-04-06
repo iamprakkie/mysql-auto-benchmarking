@@ -17,11 +17,3 @@ yum install mysql-community-client -y
 
 #dbt2 installation
 yum install wget gcc make autoconf mysql-devel -y
-mkdir -p /tmp/dbt2
-cd /tmp/dbt2
-wget https://downloads.mysql.com/source/dbt2-0.37.50.16.tar.gz
-tar -xvzf dbt2-0.37.50.16.tar.gz
-cd dbt2-0.37.50.16
-./configure --with-mysql
-make
-make install

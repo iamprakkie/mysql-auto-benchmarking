@@ -6,6 +6,15 @@ log() {
   echo -e "\e[37;42m$1\e[0m"
 }
 
+mkdir -p /home/ssm-user/dbt2
+cd /home/ssm-user/dbt2
+wget https://downloads.mysql.com/source/dbt2-0.37.50.16.tar.gz
+tar -xvzf dbt2-0.37.50.16.tar.gz
+cd dbt2-0.37.50.16
+./configure --with-mysql
+make
+make install
+
 MYREGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/region)
 aws configure set region $MYREGION
 MYSQL_REGION=$(aws cloudformation describe-stacks --stack-name 'mySQLBenchmarking' --query "Stacks[][].Outputs[?OutputKey=='mysqlRegion'].OutputValue" --output text)
