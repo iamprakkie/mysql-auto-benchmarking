@@ -17,16 +17,8 @@ cd dbt2-0.37.50.16
 sudo make
 sudo make install
 
-MYREGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/region)
-aws configure set region $MYREGION
-MYSQL_REGION=$(aws cloudformation describe-stacks --stack-name 'mySQLBenchmarking' --query "Stacks[][].Outputs[?OutputKey=='mysqlRegion'].OutputValue" --output text)
-
-MYSQL_PATH=$(which mysql)
-MYSQL_DIR=$(dirname $MYSQL_PATH)
-
-MYSQL_HOST_IP=$(aws cloudformation describe-stacks --stack-name 'mySQLBenchmarking' --query "Stacks[][].Outputs[?OutputKey=='mySQLPrivIP'].OutputValue" --output text)
-BENCHMARKER_SECRET_ID=$(aws cloudformation describe-stacks --stack-name 'mySQLBenchmarking' --query "Stacks[][].Outputs[?OutputKey=='mysqlBenchmarkerSecret'].OutputValue" --output text)
-BENCHMARKER_PWD=$(aws secretsmanager get-secret-value --region $MYSQL_REGION --secret-id $BENCHMARKER_SECRET_ID --query SecretString --output text)
+#set envs for mysql connection
+source /home/ssm-user/my-cdk/envs-for-mysql.sh
 
 cp /home/ssm-user/my-cdk/altered_mysql_load_sp.sh /home/ssm-user/dbt2/dbt2-0.37.50.16/scripts/mysql/mysql_load_sp.sh
 cp /home/ssm-user/my-cdk/altered_mysql_load_db.sh /home/ssm-user/dbt2/dbt2-0.37.50.16/scripts/mysql/mysql_load_db.sh

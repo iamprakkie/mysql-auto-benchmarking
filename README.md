@@ -68,7 +68,6 @@ This example includes:
     cd /home/ssm-user
     git clone https://github.com/iamprakkie/my-cdk.git
     cd my-cdk
-    sh ./envs-for-mysql.sh
     sh ./set-dbt2.sh 50 # 1st parameter = number of warehouses.
     ```
 
