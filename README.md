@@ -34,7 +34,7 @@ This example includes:
     export MYSQL_VOL_TYPE="io1" # when not set, will use gp3 as default value
     export MYSQL_VOL_IOPS=3000 # when not set, will use 150 as default value. This value will be used only for gp3, io1 and io2 volume types.
     ```
-1. Verify and do required changes to user data of MySQL and DBT2 instances. They are in `mysql-instance-user-data.sh` and `dbt2-instance-user-data.sh` respectively.
+1. Verify and do required changes to user data of MySQL and DBT2 instances. They are in `user-data-mysql-instance.sh` and `user-data-dbt2-instance.sh` respectively.
 
 1. Deploy CDK to create MySQL instance and DBT2 instance using below mentioned commands. Both instances will be of type mentioned in `$MYSQL_INST_TYPE`. MySQL instance root volume will have 100GB GP3 storage and data volume (/dev/sda1) will be created with values as in env variables mentioned above. /var/lib/mysql will be in /dev/sda1 volume. DBT2 instance root volume will have 100GB GP3 storage. 
     ```bash

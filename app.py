@@ -160,7 +160,7 @@ class EC2InstanceStack(Stack):
         # ])
 
         # Script in S3 as Asset
-        asset = Asset(self, "mySQLAsset", path=os.path.join(dirname, "mysql-instance-user-data.sh"))
+        asset = Asset(self, "mySQLAsset", path=os.path.join(dirname, "user-data-mysql-instance.sh"))
         local_path = mySQLInstance.user_data.add_s3_download_command(
             bucket=asset.bucket,
             bucket_key=asset.s3_object_key
@@ -187,7 +187,7 @@ class EC2InstanceStack(Stack):
             )
         
         # Script in S3 as Asset
-        asset = Asset(self, "dbt2Asset", path=os.path.join(dirname, "dbt2-instance-user-data.sh"))
+        asset = Asset(self, "dbt2Asset", path=os.path.join(dirname, "user-data-dbt2-instance.sh"))
         local_path = dbt2Instance.user_data.add_s3_download_command(
             bucket=asset.bucket,
             bucket_key=asset.s3_object_key
@@ -201,8 +201,8 @@ class EC2InstanceStack(Stack):
 
         mysqlRootkey = kms.Key(self, "MySQLRootKMS")
         mysqlBenchmarkerkey = kms.Key(self, "MySQLBenchmarkerKMS")
-        mysql_root_secret = secretsmanager.Secret(self, "MySQLRootSecret", generate_secret_string=secretsmanager.SecretStringGenerator(exclude_punctuation=False,exclude_characters="'\\/\"`$"), encryption_key=mysqlRootkey,)
-        mysql_benchmarker_secret = secretsmanager.Secret(self, "MySQLBenchmarkerSecret", generate_secret_string=secretsmanager.SecretStringGenerator(exclude_punctuation=False,exclude_characters="'\\/\"`$;,|:\{\}\[\]\(\)"), encryption_key=mysqlBenchmarkerkey)
+        mysql_root_secret = secretsmanager.Secret(self, "MySQLRootSecret", generate_secret_string=secretsmanager.SecretStringGenerator(exclude_punctuation=False,exclude_characters="'\\/\"`$;,|:\{\}\[\]\(\)\<\>"), encryption_key=mysqlRootkey,)
+        mysql_benchmarker_secret = secretsmanager.Secret(self, "MySQLBenchmarkerSecret", generate_secret_string=secretsmanager.SecretStringGenerator(exclude_punctuation=False,exclude_characters="'\\/\"`$;,|:\{\}\[\]\(\)\<\>"), encryption_key=mysqlBenchmarkerkey)
         
         mysql_root_secret.grant_read(mySQLInstance.role)
         mysql_benchmarker_secret.grant_read(mySQLInstance.role)

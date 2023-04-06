@@ -14,8 +14,8 @@ wget https://downloads.mysql.com/source/dbt2-0.37.50.16.tar.gz
 tar -xvzf dbt2-0.37.50.16.tar.gz
 cd dbt2-0.37.50.16
 ./configure --with-mysql
-make
-make install
+sudo make
+sudo make install
 
 MYREGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/region)
 aws configure set region $MYREGION
@@ -28,8 +28,8 @@ MYSQL_HOST_IP=$(aws cloudformation describe-stacks --stack-name 'mySQLBenchmarki
 BENCHMARKER_SECRET_ID=$(aws cloudformation describe-stacks --stack-name 'mySQLBenchmarking' --query "Stacks[][].Outputs[?OutputKey=='mysqlBenchmarkerSecret'].OutputValue" --output text)
 BENCHMARKER_PWD=$(aws secretsmanager get-secret-value --region $MYSQL_REGION --secret-id $BENCHMARKER_SECRET_ID --query SecretString --output text)
 
-cp ./altered_mysql_load_sp.sh /home/ssm-user/dbt2/dbt2-0.37.50.16/scripts/mysql/mysql_load_sp.sh
-cp ./altered_mysql_load_db.sh /home/ssm-user/dbt2/dbt2-0.37.50.16/scripts/mysql/mysql_load_db.sh
+cp /home/ssm-user/my-cdk/altered_mysql_load_sp.sh /home/ssm-user/dbt2/dbt2-0.37.50.16/scripts/mysql/mysql_load_sp.sh
+cp /home/ssm-user/my-cdk/altered_mysql_load_db.sh /home/ssm-user/dbt2/dbt2-0.37.50.16/scripts/mysql/mysql_load_db.sh
 
 log "Generating data..."
 mkdir -p /home/ssm-user/dbt2/data
@@ -46,7 +46,7 @@ for filename in `find /home/ssm-user/dbt2/data  -type f -name \*.data`; do
 done
 
 log "Loading data into dbt2 database"
-/home/ssm-user/dbt2/dbt2-0.37.50.16/scripts/mysql/mysql_load_db.sh --local --path ~/dbt2/data --mysql-path $MYSQL_PATH --database dbt2 --host $MYSQL_HOST_IP --user benchmarker --password $BENCHMARKER_PWD
+/home/ssm-user/dbt2/dbt2-0.37.50.16/scripts/mysql/mysql_load_db.sh --local --path /home/ssm-user/dbt2/data --mysql-path $MYSQL_PATH --database dbt2 --host $MYSQL_HOST_IP --user benchmarker --password $BENCHMARKER_PWD
 
 log "Loading stored procedures into dbt2 database"
-/home/ssm-user/dbt2/dbt2-0.37.50.16/scripts/mysql/mysql_load_sp.sh --client-path $MYSQL_DIR --sp-path ~/dbt2/dbt2-0.37.50.16/storedproc/mysql --host $MYSQL_HOST_IP --user benchmarker --password $BENCHMARKER_PWD
+/home/ssm-user/dbt2/dbt2-0.37.50.16/scripts/mysql/mysql_load_sp.sh --client-path $MYSQL_DIR --sp-path /home/ssm-user/dbt2/dbt2-0.37.50.16/storedproc/mysql --host $MYSQL_HOST_IP --user benchmarker --password $BENCHMARKER_PWD
