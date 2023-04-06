@@ -9,7 +9,7 @@ echo -e "UUID=`sudo blkid /dev/sda1 -s UUID -o value`\t/mysql-data\txfs\tdefault
 
 # install mysql 8.0.32
 yum update -y
-yum install jq -y
+yum install git jq -y
 rpm -Uvh https://repo.mysql.com/mysql80-community-release-el7-3.noarch.rpm
 yum-config-manager --disable mysql57-community
 yum-config-manager --enable mysql80-community

@@ -52,6 +52,7 @@ This example includes:
 
 1. Change MySQL root user password and create new MySQL user benchmarker by running below commands in MySQL instance. Passwords are picked up from Secrets created as part of CDK deployment.
     ```bash
+    cd /home/ssm-user
     git clone https://github.com/iamprakkie/my-cdk.git
     cd my-cdk
     sudo sh ./set-mysql-users.sh
@@ -64,6 +65,7 @@ This example includes:
 
 1. Run below commands to set DBT2 benchmarking.
     ```bash
+    cd /home/ssm-user
     git clone https://github.com/iamprakkie/my-cdk.git
     cd my-cdk
     sh ./envs-for-mysql.sh
@@ -72,7 +74,7 @@ This example includes:
 
 1. Run DBT2 benchmarking using this script.
     ```bash
-    sh /home/ssm-user/run-dbt2-benchmarking.sh 50 30 # 1st parameter = number of warehouses, 2nd parameter = number of connections. Both defaults to 20.
+    sh /home/ssm-user/my-cdk/run-dbt2-benchmarking.sh 50 30 # 1st parameter = number of warehouses, 2nd parameter = number of connections. Both defaults to 20.
     ```
 
 1. Cleanup all resources created by using cdk destroy from host.

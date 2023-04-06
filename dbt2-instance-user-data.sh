@@ -13,7 +13,8 @@ rpm -Uvh https://repo.mysql.com/mysql80-community-release-el7-3.noarch.rpm
 yum-config-manager --disable mysql57-community
 yum-config-manager --enable mysql80-community
 rpm --import https://repo.mysql.com/RPM-GPG-KEY-mysql-2022
+yum install git jq -y
 yum install mysql-community-client -y
 
 #for dbt2
-yum install jq wget gcc make autoconf mysql-devel -y
+yum install wget gcc make autoconf mysql-devel -y
