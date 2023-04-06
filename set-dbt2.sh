@@ -14,7 +14,7 @@ wget https://downloads.mysql.com/source/dbt2-0.37.50.16.tar.gz
 tar -xvzf dbt2-0.37.50.16.tar.gz
 cd dbt2-0.37.50.16
 ./configure --with-mysql
-sudo make
+sudo make -j 8
 sudo make install
 
 #set envs for mysql connection

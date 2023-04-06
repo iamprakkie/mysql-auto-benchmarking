@@ -1,6 +1,4 @@
 import os
-import sys
-import json
 
 from constructs import Construct
 from aws_cdk.aws_s3_assets import Asset
@@ -22,7 +20,7 @@ class bcolors:
     ENDC = '\033[0m'
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
-
+    
 dirname = os.path.dirname(__file__)
 mySQLInstName = "mySQLBenchmarking"
 

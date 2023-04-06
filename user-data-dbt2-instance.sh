@@ -17,4 +17,4 @@ yum install git jq -y
 yum install mysql-community-client -y
 
 #for dbt2
-yum install wget gcc make autoconf mysql-devel -y
+yum install wget gcc make cmake autoconf mysql-devel -y

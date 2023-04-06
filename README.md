@@ -1,5 +1,5 @@
 
-# Create EC2 Instance in new VPC with Systems Manager enabled and install mySQL 8
+# Benchmarking of MySQL 8 running on EC2 instances. Create EC2 instances in new VPC using CDK and access them using SSM.
 
 This example includes:
 
@@ -73,15 +73,16 @@ This example includes:
 
 1. Run DBT2 benchmarking using this script.
     ```bash
-    sh /home/ssm-user/mysql-dbt2-benchmarking/run-dbt2-benchmarking.sh 50 30 # 1st parameter = number of warehouses, 2nd parameter = number of connections. Both defaults to 20.
+    sh /home/ssm-user/mysql-dbt2-benchmarking/run-dbt2-benchmarking.sh 50 600 30 # 1st parameter = number of warehouses (default=20), 2nd parameter = test run duration (default=300s); 3rd parameter = number of connections (default=20).
     ```
 
-1. You can below script to connect to MySQL client as benchmaker user from MySQL or DBT2 instance.
+1. You can run below script to connect to MySQL client as benchmaker user from MySQL or DBT2 instance.
     ```bash
     sh /home/ssm-user/mysql-dbt2-benchmarking/mysql-benchmarker.sh
     ```
+## Clean up
 
-1. Cleanup all resources created by using cdk destroy from host.
+* Cleanup all resources created by using cdk destroy from host.
     ```bash
     cdk destroy
     deactivate
