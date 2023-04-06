@@ -70,12 +70,12 @@ class EC2InstanceStack(Stack):
             storage=ec2.AmazonLinuxStorage.GENERAL_PURPOSE
             )
 
-        # Instance Role and SSM Managed Policy for DBT2 instance
+        # Instance Role and SSM Managed Policy for MySQL instance
         cfnArn = "arn:aws:cloudformation:" + self.region + ":" + self.account + ":stack/mySQLBenchmarking*"
         mySQLInstRole = iam.Role(self, "MySQLInstanceSSM", assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"))
         mySQLInstRole.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMManagedInstanceCore"))
         mySQLInstRole.attach_inline_policy(
-            iam.Policy(self, 'mySQLIntPolicy',
+            iam.Policy(self, 'mySQLInstPolicy',
                     statements = [
                     iam.PolicyStatement(
                     effect = iam.Effect.ALLOW,
