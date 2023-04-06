@@ -50,12 +50,31 @@ class EC2InstanceStack(Stack):
             )
 
         # Instance Role and SSM Managed Policy for DBT2 instance
+        cfnArn = "arn:aws:cloudformation:" + self.region + ":" + self.account + ":stack/mySQLBenchmarking*"
         mySQLInstRole = iam.Role(self, "MySQLInstanceSSM", assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"))
         mySQLInstRole.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMManagedInstanceCore"))
+        mySQLInstRole.attach_inline_policy(
+            iam.Policy(self, 'mySQLIntPolicy',
+                    statements = [
+                    iam.PolicyStatement(
+                    effect = iam.Effect.ALLOW,
+                    actions = ['cloudformation:Describe*','cloudformation:List*'],
+                    resources = [cfnArn]
+                )]))
+
 
         # Instance Role and SSM Managed Policy for DBT2 instance
         dbt2InstRole = iam.Role(self, "DBT2InstanceSSM", assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"))
         dbt2InstRole.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMManagedInstanceCore"))
+        dbt2InstRole.attach_inline_policy(
+            iam.Policy(self, 'dbt2IntPolicy',
+                    statements = [
+                    iam.PolicyStatement(
+                    effect = iam.Effect.ALLOW,
+                    actions = ['cloudformation:Describe*','cloudformation:List*'],
+                    resources = [cfnArn]
+                )]))
+
 
         #Security Group for DBT2 instance
         sg_dbt2 = ec2.SecurityGroup(
@@ -159,8 +178,8 @@ class EC2InstanceStack(Stack):
 
         mysqlRootkey = kms.Key(self, "MySQLRootKMS")
         mysqlBenchmarkerkey = kms.Key(self, "MySQLBenchmarkerKMS")
-        mysql_root_secret = secretsmanager.Secret(self, "MySQLRootSecret", encryption_key=mysqlRootkey)
-        mysql_benchmarker_secret = secretsmanager.Secret(self, "MySQLBenchmarkerSecret", encryption_key=mysqlBenchmarkerkey)
+        mysql_root_secret = secretsmanager.Secret(self, "MySQLRootSecret", generate_secret_string=secretsmanager.SecretStringGenerator(exclude_punctuation=False,exclude_characters="'\\/\"`$"), encryption_key=mysqlRootkey,)
+        mysql_benchmarker_secret = secretsmanager.Secret(self, "MySQLBenchmarkerSecret", generate_secret_string=secretsmanager.SecretStringGenerator(exclude_punctuation=False,exclude_characters="'\\/\"`$"), encryption_key=mysqlBenchmarkerkey)
         
         mysql_root_secret.grant_read(mySQLInstance.role)
         mysql_benchmarker_secret.grant_read(mySQLInstance.role)
