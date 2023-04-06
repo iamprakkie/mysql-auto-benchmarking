@@ -77,6 +77,11 @@ This example includes:
     sh /home/ssm-user/my-cdk/run-dbt2-benchmarking.sh 50 30 # 1st parameter = number of warehouses, 2nd parameter = number of connections. Both defaults to 20.
     ```
 
+1. You can below script to connect to MySQL client as benchmaker user from MySQL or DBT2 instance.
+    ```bash
+    sh /home/ssm-user/my-cdk/mysql-benchmarker.sh
+    ```
+
 1. Cleanup all resources created by using cdk destroy from host.
     ```bash
     cdk destroy

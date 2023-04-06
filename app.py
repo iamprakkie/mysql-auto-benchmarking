@@ -202,7 +202,7 @@ class EC2InstanceStack(Stack):
         mysqlRootkey = kms.Key(self, "MySQLRootKMS")
         mysqlBenchmarkerkey = kms.Key(self, "MySQLBenchmarkerKMS")
         mysql_root_secret = secretsmanager.Secret(self, "MySQLRootSecret", generate_secret_string=secretsmanager.SecretStringGenerator(exclude_punctuation=False,exclude_characters="'\\/\"`$"), encryption_key=mysqlRootkey,)
-        mysql_benchmarker_secret = secretsmanager.Secret(self, "MySQLBenchmarkerSecret", generate_secret_string=secretsmanager.SecretStringGenerator(exclude_punctuation=False,exclude_characters="'\\/\"`$"), encryption_key=mysqlBenchmarkerkey)
+        mysql_benchmarker_secret = secretsmanager.Secret(self, "MySQLBenchmarkerSecret", generate_secret_string=secretsmanager.SecretStringGenerator(exclude_punctuation=False,exclude_characters="'\\/\"`$;,|:\{\}\[\]\(\)"), encryption_key=mysqlBenchmarkerkey)
         
         mysql_root_secret.grant_read(mySQLInstance.role)
         mysql_benchmarker_secret.grant_read(mySQLInstance.role)
