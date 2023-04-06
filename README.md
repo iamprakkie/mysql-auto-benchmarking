@@ -78,4 +78,5 @@ This example includes:
 1. Cleanup all resources created by using cdk destroy from host.
     ```bash
     cdk destroy
+    deactivate
     ```
