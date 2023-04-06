@@ -7,6 +7,6 @@ log() {
 }
 
 #set envs for mysql connection
-source /home/ssm-user/my-cdk/envs-for-mysql.sh
+source /home/ssm-user/mysql-dbt2-benchmarking/envs-for-mysql.sh
 
 mysql -u benchmarker -h $MYSQL_HOST_IP --password=$BENCHMARKER_PWD

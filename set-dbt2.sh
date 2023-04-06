@@ -18,10 +18,10 @@ sudo make
 sudo make install
 
 #set envs for mysql connection
-source /home/ssm-user/my-cdk/envs-for-mysql.sh
+source /home/ssm-user/mysql-dbt2-benchmarking/envs-for-mysql.sh
 
-cp /home/ssm-user/my-cdk/altered_mysql_load_sp.sh /home/ssm-user/dbt2/dbt2-0.37.50.16/scripts/mysql/mysql_load_sp.sh
-cp /home/ssm-user/my-cdk/altered_mysql_load_db.sh /home/ssm-user/dbt2/dbt2-0.37.50.16/scripts/mysql/mysql_load_db.sh
+cp /home/ssm-user/mysql-dbt2-benchmarking/altered_mysql_load_sp.sh /home/ssm-user/dbt2/dbt2-0.37.50.16/scripts/mysql/mysql_load_sp.sh
+cp /home/ssm-user/mysql-dbt2-benchmarking/altered_mysql_load_db.sh /home/ssm-user/dbt2/dbt2-0.37.50.16/scripts/mysql/mysql_load_db.sh
 
 log "Generating data..."
 mkdir -p /home/ssm-user/dbt2/data
