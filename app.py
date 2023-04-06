@@ -12,13 +12,36 @@ from aws_cdk import (
     App, Stack, CfnOutput 
 )
 
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
 dirname = os.path.dirname(__file__)
 mySQLInstName = "mySQLBenchmarking"
 
 instType = os.getenv("MYSQL_INST_TYPE", "t3.medium")
-volSize=int(os.getenv("MYSQL_VOL_SIZE", 50))
-volType=ec2.EbsDeviceVolumeType.IO1
-volIOPS=int(os.getenv("MYSQL_VOL_IOPS", 150))
+volSize = int(os.getenv("MYSQL_VOL_SIZE", 50))
+volIOPS = int(os.getenv("MYSQL_VOL_IOPS", 150))
+inputVolType = os.getenv("MYSQL_VOL_TYPE", "gp3")
+
+if inputVolType.lower() == 'gp2':
+    volType = ec2.EbsDeviceVolumeType.GP2
+elif inputVolType.lower() == 'gp3':
+    volType = ec2.EbsDeviceVolumeType.GP3
+elif inputVolType.lower() == 'io1':
+    volType = ec2.EbsDeviceVolumeType.IO1
+elif inputVolType.lower() == 'io2':
+    volType = ec2.EbsDeviceVolumeType.IO2
+else:
+    print(f"{bcolors.WARNING}Unknown volume type found in env MYSQL_VOL_TYPE. Defaulting to GP3.{bcolors.ENDC}")
+    volType = ec2.EbsDeviceVolumeType.GP3
 
 class EC2InstanceStack(Stack):
 
@@ -111,7 +134,7 @@ class EC2InstanceStack(Stack):
             # vpc_subnets=ec2.SubnetSelection( subnet_group_name=subnet_id),
             security_group=sg_mysql,
             block_devices=[
-                ec2.BlockDevice(device_name="/dev/xvda",volume=ec2.BlockDeviceVolume.ebs(30,delete_on_termination=True,volume_type=ec2.EbsDeviceVolumeType.GP3)),
+                ec2.BlockDevice(device_name="/dev/xvda",volume=ec2.BlockDeviceVolume.ebs(100,delete_on_termination=True,volume_type=ec2.EbsDeviceVolumeType.GP3)),
                 ec2.BlockDevice(device_name="/dev/sda1",volume=ec2.BlockDeviceVolume.ebs(volSize,delete_on_termination=True,iops=volIOPS,volume_type=volType))
             ],
             role = mySQLInstRole
@@ -157,8 +180,8 @@ class EC2InstanceStack(Stack):
             vpc_subnets=ec2.SubnetSelection(subnets=[ec2.Subnet.from_subnet_attributes(self,"publicSubnet",subnet_id=publicSubnetId,availability_zone=az_lookup[publicSubnetId])]),
             security_group=sg_dbt2,
             block_devices=[
-                ec2.BlockDevice(device_name="/dev/xvda",volume=ec2.BlockDeviceVolume.ebs(30,delete_on_termination=True,volume_type=ec2.EbsDeviceVolumeType.GP3)),
-                ec2.BlockDevice(device_name="/dev/sda1",volume=ec2.BlockDeviceVolume.ebs(100,delete_on_termination=True,volume_type=ec2.EbsDeviceVolumeType.GP3))
+                ec2.BlockDevice(device_name="/dev/xvda",volume=ec2.BlockDeviceVolume.ebs(100,delete_on_termination=True,volume_type=ec2.EbsDeviceVolumeType.GP3)),
+                # ec2.BlockDevice(device_name="/dev/sda1",volume=ec2.BlockDeviceVolume.ebs(100,delete_on_termination=True,volume_type=ec2.EbsDeviceVolumeType.GP3))
             ],
             role = dbt2InstRole
             )
@@ -186,7 +209,7 @@ class EC2InstanceStack(Stack):
         mysql_benchmarker_secret.grant_read(dbt2Instance.role)
 
         #Cloudformation Outputs
-        #CfnOutput(self, 'vpcId', value=vpc.vpc_id, export_name='ExportedVpcId')
+        CfnOutput(self, 'vpcId', value=vpc.vpc_id, export_name='ExportedVpcId')
         CfnOutput(self, "mySQLInstId", value=mySQLInstance.instance_id, export_name='ExportedMySQLInstId')
         CfnOutput(self, "mySQLPrivIP", value=mySQLInstance.instance_private_ip, export_name='ExportedMySQLPrivIP')
         CfnOutput(self, "dbt2InstId", value=dbt2Instance.instance_id, export_name='ExportedDBT2InstId')

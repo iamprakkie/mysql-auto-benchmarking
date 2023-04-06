@@ -15,5 +15,5 @@ yum-config-manager --enable mysql80-community
 rpm --import https://repo.mysql.com/RPM-GPG-KEY-mysql-2022
 yum install mysql-community-client -y
 
-#dbt2 installation
-yum install wget gcc make autoconf mysql-devel -y
+#for dbt2
+yum install jq wget gcc make autoconf mysql-devel -y

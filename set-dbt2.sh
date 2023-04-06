@@ -6,6 +6,8 @@ log() {
   echo -e "\e[37;42m$1\e[0m"
 }
 
+WAREHOUSE_COUNT=${1:-20}
+
 mkdir -p /home/ssm-user/dbt2
 cd /home/ssm-user/dbt2
 wget https://downloads.mysql.com/source/dbt2-0.37.50.16.tar.gz
@@ -26,12 +28,13 @@ MYSQL_HOST_IP=$(aws cloudformation describe-stacks --stack-name 'mySQLBenchmarki
 BENCHMARKER_SECRET_ID=$(aws cloudformation describe-stacks --stack-name 'mySQLBenchmarking' --query "Stacks[][].Outputs[?OutputKey=='mysqlBenchmarkerSecret'].OutputValue" --output text)
 BENCHMARKER_PWD=$(aws secretsmanager get-secret-value --region $MYSQL_REGION --secret-id $BENCHMARKER_SECRET_ID --query SecretString --output text)
 
-#cp altered_mysql_load_sp.sh /home/ssm-user/dbt2/dbt2-0.37.50.16/scripts/mysql/mysql_load_sp.sh
-#cp altered_mysql_load_db.sh /home/ssm-user/dbt2/dbt2-0.37.50.16/scripts/mysql/mysql_load_db.sh
+cp ./altered_mysql_load_sp.sh /home/ssm-user/dbt2/dbt2-0.37.50.16/scripts/mysql/mysql_load_sp.sh
+cp ./altered_mysql_load_db.sh /home/ssm-user/dbt2/dbt2-0.37.50.16/scripts/mysql/mysql_load_db.sh
 
 log "Generating data..."
 mkdir -p /home/ssm-user/dbt2/data
-/home/ssm-user/dbt2/dbt2-0.37.50.16/src/datagen -w 20 -d /home/ssm-user/dbt2/data --mysql
+rm -fr /home/ssm-user/dbt2/data/*
+/home/ssm-user/dbt2/dbt2-0.37.50.16/src/datagen -w $WAREHOUSE_COUNT -d /home/ssm-user/dbt2/data --mysql
 
 # convert customer data to UTF-8 (utf8mb4 is the default in MySQL 8.0)
 log "Converting to UTF-8..."
@@ -47,6 +50,3 @@ log "Loading data into dbt2 database"
 
 log "Loading stored procedures into dbt2 database"
 /home/ssm-user/dbt2/dbt2-0.37.50.16/scripts/mysql/mysql_load_sp.sh --client-path $MYSQL_DIR --sp-path ~/dbt2/dbt2-0.37.50.16/storedproc/mysql --host $MYSQL_HOST_IP --user benchmarker --password $BENCHMARKER_PWD
-
-log "Benchmarking.."
-/home/ssm-user/dbt2/dbt2-0.37.50.16/scripts/run_mysql.sh --connections 20 --time 300 --warehouses 20 --zero-delay --host $MYSQL_HOST_IP --user benchmarker --password $BENCHMARKER_PWD
