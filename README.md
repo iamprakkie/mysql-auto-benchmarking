@@ -1,5 +1,5 @@
 
-# Create EC2 Instance in new VPC with Systems Manager enabled and install mySQL v8.0.31
+# Create EC2 Instance in new VPC with Systems Manager enabled and install mySQL 8
 
 This example includes:
 
