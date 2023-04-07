@@ -50,6 +50,13 @@ This example includes:
     sh ./connect-to-mysql-instance.sh
     ```
 
+1. Run below script in MySQL instance to setup auto benchmarking
+    ```bash
+    cd /home/ssm-user
+    git clone https://github.com/iamprakkie/mysql-auto-benchmarking.git
+    sh /home/ssm-user/mysql-auto-benchmarking/setup-autobench.sh
+    ```
+
 ## Clean up
 
 * Cleanup all resources created by using cdk destroy from host.
