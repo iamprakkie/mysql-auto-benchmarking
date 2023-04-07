@@ -14,11 +14,8 @@ ln -sf /mysql-data/bench/dbt2-autobench.conf /mysql-data/bench/autobench.conf
 
 cp /home/ssm-user/mysql-auto-benchmarking/bench_run.sh /mysql-data/bench
 
-#build for mysql
+#build for mysql - NOT WORKING :( 
 #sh /mysql-data/bench/bench_run.sh --default-directory /mysql-data/bench --build-mysql --generate-dbt2-data
-
-sh ./bench_run.sh --default-directory /mysql-data/bench --verbose --init 2>&1 | tee output.log
-
-sh ./bench_run.sh --default-directory /mysql-data/bench --verbose --build-mysql 2>&1 | tee output.log
-
-sh ./bench_run.sh --default-directory /mysql-data/bench --verbose --generate-dbt2-data 2>&1 | tee output.log
+#sh ./bench_run.sh --default-directory /mysql-data/bench --verbose --init 2>&1 | tee output.log
+#sh ./bench_run.sh --default-directory /mysql-data/bench --verbose --build-mysql 2>&1 | tee output.log
+#sh ./bench_run.sh --default-directory /mysql-data/bench --verbose --generate-dbt2-data 2>&1 | tee output.log
