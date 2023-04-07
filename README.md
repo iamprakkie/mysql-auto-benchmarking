@@ -1,5 +1,5 @@
 
-# Auto benchmarking of MySQL 8 running on EC2 instance using DBT2. Create EC2 instance in new VPC using CDK and access them using SSM.
+# Benchmarking of MySQL 8 running on EC2 instances. Create EC2 instances in new VPC using CDK and access them using SSM.
 
 This example includes:
 
@@ -23,8 +23,8 @@ This example includes:
 
 1. Clone this repository
     ```bash
-    git clone https://github.com/iamprakkie/mysql-auto-benchmarking.git
-    cd mysql-auto-benchmarking
+    git clone https://github.com/iamprakkie/mysql-dbt2-benchmarking.git
+    cd mysql-dbt2-benchmarking
     ```
 
 1. Set below mentioned environment variables with required values
@@ -34,9 +34,9 @@ This example includes:
     export MYSQL_VOL_TYPE="io1" # when not set, will use gp3 as default value
     export MYSQL_VOL_IOPS=3000 # when not set, will use 150 as default value. This value will be used only for gp3, io1 and io2 volume types.
     ```
-1. Verify and do required changes to user data of MySQL instance in `user-data-mysql-instance.sh`.
+1. Verify and do required changes to user data of MySQL and DBT2 instances. They are in `user-data-mysql-instance.sh` and `user-data-dbt2-instance.sh` respectively. MySQL user (root and benchmarker) passwords are stored as secrets in Secrets Manager.
 
-1. Deploy CDK to create MySQL instance using below mentioned commands. MySQL instance will be of type mentioned in `$MYSQL_INST_TYPE`. MySQL instance root volume will have 50GB GP3 storage and data volume (/dev/sda1) will be created with values as in env variables mentioned above.
+1. Deploy CDK to create MySQL instance and DBT2 instance using below mentioned commands. Both instances will be of type mentioned in `$MYSQL_INST_TYPE`. MySQL instance root volume will have 100GB GP3 storage and data volume (/dev/sda1) will be created with values as in env variables mentioned above. /var/lib/mysql will be in /dev/sda1 volume. DBT2 instance root volume will have 100GB GP3 storage. 
     ```bash
     virtualenv --python python3.7 venv
     source venv/bin/activate
@@ -45,18 +45,28 @@ This example includes:
     cdk deploy
     ```
 
-1. Then, start SSM session to MySQL instance.
+1. Exit from MySQL instance's SSM session. Then, start SSM session to DBT2 instance.
     ```bash
-    sh ./connect-to-mysql-instance.sh
+    sh ./connect-to-dbt2-instance.sh
     ```
 
-1. Run below script in MySQL instance to setup auto benchmarking
+1. Run below commands to set DBT2 benchmarking.
     ```bash
     cd /home/ssm-user
-    git clone https://github.com/iamprakkie/mysql-auto-benchmarking.git
-    sh /home/ssm-user/mysql-auto-benchmarking/setup-autobench.sh
+    git clone https://github.com/iamprakkie/mysql-dbt2-benchmarking.git
+    cd mysql-dbt2-benchmarking
+    sh ./setup-dbt2.sh 50 # 1st parameter = number of warehouses.
     ```
 
+1. Run DBT2 benchmarking using this script.
+    ```bash
+    sh /home/ssm-user/mysql-dbt2-benchmarking/run-dbt2-benchmarking.sh 50 600 30 # 1st parameter = number of warehouses (default=20), 2nd parameter = test run duration (default=300s); 3rd parameter = number of connections (default=20).
+    ```
+
+1. You can run below script to connect to MySQL client as benchmaker user from MySQL or DBT2 instance.
+    ```bash
+    sh /home/ssm-user/mysql-dbt2-benchmarking/mysql-benchmarker.sh
+    ```
 ## Clean up
 
 * Cleanup all resources created by using cdk destroy from host.
