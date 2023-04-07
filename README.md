@@ -34,7 +34,7 @@ This example includes:
     export MYSQL_VOL_TYPE="io1" # when not set, will use gp3 as default value
     export MYSQL_VOL_IOPS=3000 # when not set, will use 150 as default value. This value will be used only for gp3, io1 and io2 volume types.
     ```
-1. Verify and do required changes to user data of MySQL and DBT2 instances. They are in `user-data-mysql-instance.sh` and `user-data-dbt2-instance.sh` respectively.
+1. Verify and do required changes to user data of MySQL and DBT2 instances. They are in `user-data-mysql-instance.sh` and `user-data-dbt2-instance.sh` respectively. MySQL user (root and benchmarker) passwords are stored as secrets in Secrets Manager.
 
 1. Deploy CDK to create MySQL instance and DBT2 instance using below mentioned commands. Both instances will be of type mentioned in `$MYSQL_INST_TYPE`. MySQL instance root volume will have 100GB GP3 storage and data volume (/dev/sda1) will be created with values as in env variables mentioned above. /var/lib/mysql will be in /dev/sda1 volume. DBT2 instance root volume will have 100GB GP3 storage. 
     ```bash
@@ -43,19 +43,6 @@ This example includes:
     pip install -r requirements.txt
     cdk bootstrap
     cdk deploy
-    ```
-
-1. Then, start SSM session to MySQL instance.
-    ```bash
-    sh ./connect-to-mysql-instance.sh
-    ```
-
-1. Change MySQL root user password and create new MySQL user benchmarker by running below commands in MySQL instance. Passwords are picked up from Secrets created as part of CDK deployment.
-    ```bash
-    cd /home/ssm-user
-    git clone https://github.com/iamprakkie/mysql-dbt2-benchmarking.git
-    cd mysql-dbt2-benchmarking
-    sudo sh ./set-mysql-users.sh
     ```
 
 1. Exit from MySQL instance's SSM session. Then, start SSM session to DBT2 instance.
@@ -68,7 +55,7 @@ This example includes:
     cd /home/ssm-user
     git clone https://github.com/iamprakkie/mysql-dbt2-benchmarking.git
     cd mysql-dbt2-benchmarking
-    sh ./set-dbt2.sh 50 # 1st parameter = number of warehouses.
+    sh ./setup-dbt2.sh 50 # 1st parameter = number of warehouses.
     ```
 
 1. Run DBT2 benchmarking using this script.

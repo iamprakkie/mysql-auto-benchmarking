@@ -129,7 +129,7 @@ class EC2InstanceStack(Stack):
             instance_type=ec2.InstanceType(instance_type_identifier=instType),
             machine_image=amzn_linux,
             vpc=vpc,
-            # vpc_subnets=ec2.SubnetSelection( subnet_group_name=subnet_id),
+            vpc_subnets=ec2.SubnetSelection(subnets=[ec2.Subnet.from_subnet_attributes(self,"mySQLPublicSubnet",subnet_id=publicSubnetId,availability_zone=az_lookup[publicSubnetId])]),
             security_group=sg_mysql,
             block_devices=[
                 ec2.BlockDevice(device_name="/dev/xvda",volume=ec2.BlockDeviceVolume.ebs(100,delete_on_termination=True,volume_type=ec2.EbsDeviceVolumeType.GP3)),
@@ -175,7 +175,7 @@ class EC2InstanceStack(Stack):
             instance_type=ec2.InstanceType(instance_type_identifier=instType),
             machine_image=amzn_linux,
             vpc=vpc,
-            vpc_subnets=ec2.SubnetSelection(subnets=[ec2.Subnet.from_subnet_attributes(self,"publicSubnet",subnet_id=publicSubnetId,availability_zone=az_lookup[publicSubnetId])]),
+            vpc_subnets=ec2.SubnetSelection(subnets=[ec2.Subnet.from_subnet_attributes(self,"dbt2PublicSubnet",subnet_id=publicSubnetId,availability_zone=az_lookup[publicSubnetId])]),
             security_group=sg_dbt2,
             block_devices=[
                 ec2.BlockDevice(device_name="/dev/xvda",volume=ec2.BlockDeviceVolume.ebs(100,delete_on_termination=True,volume_type=ec2.EbsDeviceVolumeType.GP3)),
