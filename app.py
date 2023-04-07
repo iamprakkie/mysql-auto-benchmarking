@@ -22,7 +22,7 @@ class bcolors:
     UNDERLINE = '\033[4m'
     
 dirname = os.path.dirname(__file__)
-mySQLInstName = "mySQLBenchmarking"
+mySQLInstName = "mySQLAutoBenchmarking"
 
 instType = os.getenv("MYSQL_INST_TYPE", "t3.medium")
 volSize = int(os.getenv("MYSQL_VOL_SIZE", 50))
@@ -71,7 +71,7 @@ class EC2InstanceStack(Stack):
             )
 
         # Instance Role and SSM Managed Policy for MySQL instance
-        cfnArn = "arn:aws:cloudformation:" + self.region + ":" + self.account + ":stack/mySQLBenchmarking*"
+        cfnArn = "arn:aws:cloudformation:" + self.region + ":" + self.account + ":stack/mySQLAutoBenchmarking*"
         mySQLInstRole = iam.Role(self, "MySQLInstanceSSM", assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"))
         mySQLInstRole.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMManagedInstanceCore"))
         mySQLInstRole.attach_inline_policy(
