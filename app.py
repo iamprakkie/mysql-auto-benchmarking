@@ -22,7 +22,7 @@ class bcolors:
     UNDERLINE = '\033[4m'
     
 dirname = os.path.dirname(__file__)
-mySQLInstName = "mySQLBenchmarking"
+mySQLAppName = "mySQLAutoBenchmarking"
 
 instType = os.getenv("MYSQL_INST_TYPE", "t3.medium")
 volSize = int(os.getenv("MYSQL_VOL_SIZE", 50))
@@ -71,7 +71,7 @@ class EC2InstanceStack(Stack):
             )
 
         # Instance Role and SSM Managed Policy for MySQL instance
-        cfnArn = "arn:aws:cloudformation:" + self.region + ":" + self.account + ":stack/mySQLBenchmarking*"
+        cfnArn = "arn:aws:cloudformation:" + self.region + ":" + self.account + ":stack/" + mySQLAppName + "*"
         mySQLInstRole = iam.Role(self, "MySQLInstanceSSM", assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"))
         mySQLInstRole.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMManagedInstanceCore"))
         mySQLInstRole.attach_inline_policy(
@@ -124,6 +124,9 @@ class EC2InstanceStack(Stack):
             description="MySQL access"
         )
 
+        kp_mysql = ec2.CfnKeyPair(self, "MySQLCfnKeyPair", key_name="MySQLCfnKeyPair")
+        kp_mysql.attr_key_pair_id
+
         # mySQL Instance
         mySQLInstance = ec2.Instance(self, "MySQLInstance",
             instance_type=ec2.InstanceType(instance_type_identifier=instType),
@@ -131,6 +134,7 @@ class EC2InstanceStack(Stack):
             vpc=vpc,
             vpc_subnets=ec2.SubnetSelection(subnets=[ec2.Subnet.from_subnet_attributes(self,"mySQLPublicSubnet",subnet_id=publicSubnetId,availability_zone=az_lookup[publicSubnetId])]),
             security_group=sg_mysql,
+            key_name=kp_mysql.key_name,
             block_devices=[
                 ec2.BlockDevice(device_name="/dev/xvda",volume=ec2.BlockDeviceVolume.ebs(100,delete_on_termination=True,volume_type=ec2.EbsDeviceVolumeType.GP3)),
                 ec2.BlockDevice(device_name="/dev/sda1",volume=ec2.BlockDeviceVolume.ebs(volSize,delete_on_termination=True,iops=volIOPS,volume_type=volType))
@@ -197,26 +201,26 @@ class EC2InstanceStack(Stack):
             )
         asset.grant_read(dbt2Instance.role)
 
-        mysqlRootkey = kms.Key(self, "MySQLRootKMS")
-        mysqlBenchmarkerkey = kms.Key(self, "MySQLBenchmarkerKMS")
-        mysql_root_secret = secretsmanager.Secret(self, "MySQLRootSecret", generate_secret_string=secretsmanager.SecretStringGenerator(exclude_punctuation=False,exclude_characters="'\\/\"`$;,|:\{\}\[\]\(\)\<\>&"), encryption_key=mysqlRootkey,)
-        mysql_benchmarker_secret = secretsmanager.Secret(self, "MySQLBenchmarkerSecret", generate_secret_string=secretsmanager.SecretStringGenerator(exclude_punctuation=False,exclude_characters="'\\/\"`$;,|:\{\}\[\]\(\)\<\>&"), encryption_key=mysqlBenchmarkerkey)
+        # mysqlRootkey = kms.Key(self, "MySQLRootKMS")
+        # mysqlBenchmarkerkey = kms.Key(self, "MySQLBenchmarkerKMS")
+        # mysql_root_secret = secretsmanager.Secret(self, "MySQLRootSecret", generate_secret_string=secretsmanager.SecretStringGenerator(exclude_punctuation=False,exclude_characters="'\\/\"`$;,|:\{\}\[\]\(\)\<\>&"), encryption_key=mysqlRootkey,)
+        # mysql_benchmarker_secret = secretsmanager.Secret(self, "MySQLBenchmarkerSecret", generate_secret_string=secretsmanager.SecretStringGenerator(exclude_punctuation=False,exclude_characters="'\\/\"`$;,|:\{\}\[\]\(\)\<\>&"), encryption_key=mysqlBenchmarkerkey)
         
-        mysql_root_secret.grant_read(mySQLInstance.role)
-        mysql_benchmarker_secret.grant_read(mySQLInstance.role)
-        mysql_benchmarker_secret.grant_read(dbt2Instance.role)
+        # mysql_root_secret.grant_read(mySQLInstance.role)
+        # mysql_benchmarker_secret.grant_read(mySQLInstance.role)
+        # mysql_benchmarker_secret.grant_read(dbt2Instance.role)
 
         #Cloudformation Outputs
-        CfnOutput(self, 'vpcId', value=vpc.vpc_id, export_name='ExportedVpcId')
-        CfnOutput(self, "mySQLInstId", value=mySQLInstance.instance_id, export_name='ExportedMySQLInstId')
-        CfnOutput(self, "mySQLPrivIP", value=mySQLInstance.instance_private_ip, export_name='ExportedMySQLPrivIP')
-        CfnOutput(self, "dbt2InstId", value=dbt2Instance.instance_id, export_name='ExportedDBT2InstId')
-        CfnOutput(self, "dbt2PrivIP", value=dbt2Instance.instance_private_ip, export_name='ExportedDBT2PrivIP')        
-        CfnOutput(self, "mysqlRootSecret", value=mysql_root_secret.secret_name, export_name='ExportedMySQLRootSecret')
-        CfnOutput(self, "mysqlBenchmarkerSecret", value=mysql_benchmarker_secret.secret_name, export_name='ExportedMySQLBenchmarkerSecret')
-        CfnOutput(self,"mysqlRegion",value=self.region, export_name='ExportedMySQLRegion')
-        #CfnOutput(self, "sgId", value=sg_mysql.security_group_id, export_name='ExportedSgId')
+        CfnOutput(self, 'vpcId', value=vpc.vpc_id, export_name=mySQLAppName+'ExportedVpcId')
+        CfnOutput(self, "mySQLInstId", value=mySQLInstance.instance_id, export_name=mySQLAppName+'ExportedMySQLInstId')
+        CfnOutput(self, "mySQLPrivIP", value=mySQLInstance.instance_private_ip, export_name=mySQLAppName+'ExportedMySQLPrivIP')
+        CfnOutput(self, "dbt2InstId", value=dbt2Instance.instance_id, export_name=mySQLAppName+'ExportedDBT2InstId')
+        CfnOutput(self, "dbt2PrivIP", value=dbt2Instance.instance_private_ip, export_name=mySQLAppName+'ExportedDBT2PrivIP')        
+        # CfnOutput(self, "mysqlRootSecret", value=mysql_root_secret.secret_name, export_name=mySQLAppName+'ExportedMySQLRootSecret')
+        # CfnOutput(self, "mysqlBenchmarkerSecret", value=mysql_benchmarker_secret.secret_name, export_name=mySQLAppName+'ExportedMySQLBenchmarkerSecret')
+        CfnOutput(self,"mysqlRegion",value=self.region, export_name=mySQLAppName+'ExportedMySQLRegion')
+        #CfnOutput(self, "sgId", value=sg_mysql.security_group_id, export_name=mySQLAppName+'ExportedSgId')
         
 app = App()
-EC2InstanceStack(app, mySQLInstName)
+EC2InstanceStack(app, mySQLAppName)
 app.synth()
