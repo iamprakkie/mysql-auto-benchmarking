@@ -4,13 +4,21 @@ set -e
 source ./format_display.sh
 
 # create bench dir
-mkdir -p /home/ssm-user/bench /home/ssm-user/bench/tarballs /home/ssm-user/bench/mysql /home/ssm-user/bench/ndb
+mkdir -p /home/ssm-user/bench /home/ssm-user/bench/tarballs /home/ssm-user/bench/mysql /home/ssm-user/bench/ndb /home/ssm-user/bench/sysbench
 
 # Download MySQL, DBT2 and Sysbench tarballs
 wget https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-8.0.32-el7-x86_64.tar.gz -P /home/ssm-user/bench/tarballs/
 wget https://downloads.mysql.com/source/dbt2-0.37.50.16.tar.gz -P /home/ssm-user/bench/tarballs/
 wget https://downloads.mysql.com/source/sysbench-0.4.12.16.tar.gz -P /home/ssm-user/bench/tarballs/
 
+#unpacking DBT2
+tar xfz /home/ssm-user/bench/tarballs/dbt2-0.37.50.16.tar.gz -C /home/ssm-user/bench/tarballs/
+
+#copy required files
+cp /home/ssm-user/bench/tarballs/dbt2-0.37.50.16/scripts/bench_run.sh /home/ssm-user/bench/
+cp /home/ssm-user/bench/tarballs/dbt2-0.37.50.16/examples/sysbench_autobench.conf /home/ssm-user/bench/sysbench/autobench.conf
+
+## AUTOBENCH CONF PENDING##
 
 exit 11
 

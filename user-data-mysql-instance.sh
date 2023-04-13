@@ -91,3 +91,37 @@ yum install git jq -y
 # mysql --connect-expired-password -u root --password="$TEMP_PASS" mysql < /root/my.sql
 # rm -fr /root/my.sql
 
+# create ssm-user
+adduser -U -m ssm-user --shell bash
+tee /etc/sudoers.d/ssm-agent-users <<'EOF'
+# User rules for ssm-user
+ssm-user ALL=(ALL) NOPASSWD:ALL
+EOF
+chmod 440 /etc/sudoers.d/ssm-agent-users
+
+#creating .ssh 
+mkdir -p /home/ssm-user/.ssh
+
+#copying .ssh from ec2-user to ssm-user
+cp -rp /home/ec2-user/.ssh /home/ssm-user/.ssh
+
+# set permissions
+chown -R ssm-user:ssm-user /home/ssm-user/.ssh
+chmod -R 600 /home/ssm-user/.ssh
+
+# create new directory for MySQL data
+# mkdir -p /mysql-data/mysql
+
+# set ownership of new directory to match existing one
+# chown --reference=/var/lib/mysql /mysql-data/mysql
+
+# set permissions on new directory to match existing one
+# chmod --reference=/var/lib/mysql /mysql-data/mysql
+
+# copy all files in default directory, to new one, retaining perms (-p)
+# cp -rp /var/lib/mysql/* /mysql-data/mysql/
+# rm -fr /var/lib/mysql
+
+# create soft link
+# ln -s /mysql-data/mysql /var/lib/mysql
+# chown -h --reference=/mysql-data/mysql /var/lib/mysql
