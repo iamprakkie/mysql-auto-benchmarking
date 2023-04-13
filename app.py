@@ -134,7 +134,6 @@ class EC2InstanceStack(Stack):
         kp_mysql = ec2.CfnKeyPair(self, "MySQLCfnKeyPair", key_name="MySQLCfnKeyPair")
         #kp_pem = ssm.StringParameter.value_for_secure_string_parameter(self,kp_mysql.attr_key_pair_id,1)
 
-
         # mySQL Instance
         mySQLInstance = ec2.Instance(self, "MySQLInstance",
             instance_type=ec2.InstanceType(instance_type_identifier=instType),
