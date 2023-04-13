@@ -53,7 +53,7 @@ This example includes:
 1. Run below commands to set DBT2 benchmarking.
     ```bash
     cd /home/ssm-user
-    git clone https://github.com/iamprakkie/mysql-dbt2-benchmarking.git
+    git clone https://github.com/iamprakkie/mysql-auto-benchmarking.git
     cd mysql-dbt2-benchmarking
     sh ./setup-dbt2.sh 50 # 1st parameter = number of warehouses.
     ```
