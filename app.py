@@ -5,7 +5,8 @@ from aws_cdk.aws_s3_assets import Asset
 from aws_cdk import (
     aws_ec2 as ec2,
     aws_iam as iam,
-    aws_secretsmanager as secretsmanager,
+    # aws_secretsmanager as secretsmanager,
+    aws_ssm as ssm,
     aws_kms as kms,
     App, Stack, CfnOutput 
 )
@@ -124,8 +125,15 @@ class EC2InstanceStack(Stack):
             description="MySQL access"
         )
 
+        sg_mysql.add_ingress_rule(
+            peer=sg_dbt2,
+            connection=ec2.Port.tcp(22),
+            description="SSH access"
+        )        
+
         kp_mysql = ec2.CfnKeyPair(self, "MySQLCfnKeyPair", key_name="MySQLCfnKeyPair")
-        kp_mysql.attr_key_pair_id
+        #kp_pem = ssm.StringParameter.value_for_secure_string_parameter(self,kp_mysql.attr_key_pair_id,1)
+
 
         # mySQL Instance
         mySQLInstance = ec2.Instance(self, "MySQLInstance",
@@ -220,6 +228,7 @@ class EC2InstanceStack(Stack):
         # CfnOutput(self, "mysqlBenchmarkerSecret", value=mysql_benchmarker_secret.secret_name, export_name=mySQLAppName+'ExportedMySQLBenchmarkerSecret')
         CfnOutput(self,"mysqlRegion",value=self.region, export_name=mySQLAppName+'ExportedMySQLRegion')
         #CfnOutput(self, "sgId", value=sg_mysql.security_group_id, export_name=mySQLAppName+'ExportedSgId')
+        CfnOutput(self,"keyPairId", value=kp_mysql.attr_key_pair_id, export_name=mySQLAppName+'ExportedKeyPairId')
         
 app = App()
 EC2InstanceStack(app, mySQLAppName)
