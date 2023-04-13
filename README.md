@@ -54,7 +54,7 @@ This example includes:
     ```bash
     cd /home/ssm-user
     git clone https://github.com/iamprakkie/mysql-auto-benchmarking.git
-    cd mysql-dbt2-benchmarking
+    cd mysql-auto-benchmarking
     sh ./setup-dbt2.sh 50 # 1st parameter = number of warehouses.
     ```
 
