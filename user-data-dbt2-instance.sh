@@ -20,7 +20,7 @@ yum install mysql-community-client -y
 yum install wget gcc make cmake autoconf mysql-devel -y
 
 # create ssm-user
-adduser -U -m ssm-user --shell bash
+adduser -U -m ssm-user
 tee /etc/sudoers.d/ssm-agent-users <<'EOF'
 # User rules for ssm-user
 ssm-user ALL=(ALL) NOPASSWD:ALL
@@ -40,7 +40,8 @@ aws ssm get-parameter --name /ec2/keypair/$KP_ID --with-decryption --query Param
 
 # set permissions
 chown -R ssm-user:ssm-user /home/ssm-user/.ssh
-chmod -R 600 /home/ssm-user/.ssh
+chmod 700 /home/ssm-user/.ssh
+chmod 600 /home/ssm-user/.ssh/MySQLKeyPair.pem
 
 # export mysql instance private IP
 MYSQLINST=$(aws cloudformation describe-stacks --stack-name mySQLAutoBenchmarking --query "Stacks[][].Outputs[?OutputKey=='mySQLPrivIP'].OutputValue" --output text)

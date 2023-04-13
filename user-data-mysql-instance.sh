@@ -92,7 +92,7 @@ yum install git jq -y
 # rm -fr /root/my.sql
 
 # create ssm-user
-adduser -U -m ssm-user --shell bash
+adduser -U -m ssm-user
 tee /etc/sudoers.d/ssm-agent-users <<'EOF'
 # User rules for ssm-user
 ssm-user ALL=(ALL) NOPASSWD:ALL
@@ -101,13 +101,17 @@ chmod 440 /etc/sudoers.d/ssm-agent-users
 
 #creating .ssh 
 mkdir -p /home/ssm-user/.ssh
+#chmod -R ssm-user:ssm-user /home/ssm-user
+#chmod 700 /home/ssm-user
 
 #copying .ssh from ec2-user to ssm-user
-cp -rp /home/ec2-user/.ssh /home/ssm-user/.ssh
+cp -r /home/ec2-user/.ssh /home/ssm-user
 
 # set permissions
 chown -R ssm-user:ssm-user /home/ssm-user/.ssh
-chmod -R 600 /home/ssm-user/.ssh
+chmod 700 /home/ssm-user/.ssh
+
+echo "alias ll='ls -larth'" > /etc/profile.d/custom-alias.sh
 
 # create new directory for MySQL data
 # mkdir -p /mysql-data/mysql
@@ -125,3 +129,4 @@ chmod -R 600 /home/ssm-user/.ssh
 # create soft link
 # ln -s /mysql-data/mysql /var/lib/mysql
 # chown -h --reference=/mysql-data/mysql /var/lib/mysql
+
