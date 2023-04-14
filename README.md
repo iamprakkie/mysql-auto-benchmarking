@@ -23,8 +23,8 @@ This example includes:
 
 1. Clone this repository
     ```bash
-    git clone https://github.com/iamprakkie/mysql-dbt2-benchmarking.git
-    cd mysql-dbt2-benchmarking
+    git clone https://github.com/iamprakkie/mysql-auto-benchmarking.git
+    cd mysql-auto-benchmarking
     ```
 
 1. Set below mentioned environment variables with required values
