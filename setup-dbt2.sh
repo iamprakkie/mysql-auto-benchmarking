@@ -7,7 +7,8 @@ source ./format_display.sh
 mkdir -p /home/ssm-user/bench /home/ssm-user/bench/tarballs /home/ssm-user/bench/mysql /home/ssm-user/bench/ndb /home/ssm-user/bench/sysbench
 
 # Download MySQL, DBT2 and Sysbench tarballs
-wget https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-8.0.32-el7-x86_64.tar.gz -P /home/ssm-user/bench/tarballs/
+#wget https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-8.0.32-el7-x86_64.tar.gz -P /home/ssm-user/bench/tarballs/
+wget https://dev.mysql.com/get/Downloads/MySQL-Cluster-8.0/mysql-cluster-8.0.32-el7-x86_64.tar.gz -P /home/ssm-user/bench/tarballs/
 wget https://downloads.mysql.com/source/dbt2-0.37.50.16.tar.gz -P /home/ssm-user/bench/tarballs/
 wget https://downloads.mysql.com/source/sysbench-0.4.12.16.tar.gz -P /home/ssm-user/bench/tarballs/
 
