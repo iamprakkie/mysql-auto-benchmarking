@@ -24,9 +24,9 @@
 # TRX_ENGINE="yes" in autobench.conf
 
 #######
-#./bench_run.sh --default-directory /home/ssm-user/bench/sysbench --init --generate-dbt2-data --skip-start --skip-run --verbose 2>&1 | tee output.log
+#./bench_run.sh --default-directory /home/ssm-user/bench/sysbench --init --generate-dbt2-data --start --skip-run --verbose 2>&1 | tee output.log
 #######
-#./bench_run.sh --default-directory /home/ssm-user/bench/sysbench --init --generate-dbt2-data --start --verbose 2>&1 | tee output.log
+#./bench_run.sh --default-directory /home/ssm-user/bench/sysbench --skip-start --verbose 2>&1 | tee output.log
 
 #kill $(lsof -t -i:3316)
 #installing gnuplot in dbt2 machine
