@@ -79,7 +79,7 @@ class EC2InstanceStack(Stack):
                     statements = [
                     iam.PolicyStatement(
                     effect = iam.Effect.ALLOW,
-                    actions = ['cloudformation:Describe*','cloudformation:List*'],
+                    actions = ['cloudformation:Describe*','cloudformation:List*','ec2:DescribeInstances'],
                     resources = [cfnArn]
                 )]))
 

@@ -24,6 +24,12 @@ yum install numactl -y
 MYREGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/region)
 aws configure set region $MYREGION
 
+# get instance id
+MYINSTID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+
+#retrieve benchmark name from instance tag
+BENCHMARK_NAME=$(aws ec2 describe-instances --region $MYREGION --instance-ids $MYINSTID --query "Reservations[*].Instances[*].Tags[?Key=='aws:cloudformation:stack-name'].Value" --output text)
+
 # get instance private IPs
 MYSQLINST=$(aws cloudformation describe-stacks --region $MYREGION --stack-name $BENCHMARK_NAME --query "Stacks[][].Outputs[?OutputKey=='mySQLPrivIP'].OutputValue" --output text)
 DBT2INST=$(aws cloudformation describe-stacks --region $MYREGION --stack-name $BENCHMARK_NAME --query "Stacks[][].Outputs[?OutputKey=='dbt2PrivIP'].OutputValue" --output text)
