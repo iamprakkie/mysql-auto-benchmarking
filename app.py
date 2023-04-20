@@ -130,7 +130,7 @@ class EC2InstanceStack(Stack):
             description="SSH access"
         )        
 
-        kp_mysql = ec2.CfnKeyPair(self, "MySQLCfnKeyPair", key_name="MySQLCfnKeyPair")
+        kp_mysql = ec2.CfnKeyPair(self, "MySQLCfnKeyPair", key_name=mySQLAppName+'MySQLCfnKeyPair')
         #kp_pem = ssm.StringParameter.value_for_secure_string_parameter(self,kp_mysql.attr_key_pair_id,1)
 
         # mySQL Instance
