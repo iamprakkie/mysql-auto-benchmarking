@@ -10,6 +10,53 @@ echo -e "UUID=`sudo blkid /dev/sda1 -s UUID -o value`\t/mysql-data\txfs\tdefault
 # install mysql 8.0.32
 yum update -y
 yum install git jq -y
+
+#for dbt2
+yum install numactl -y
+
+# get region
+MYREGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/region)
+aws configure set region $MYREGION
+
+# get instance private IPs
+MYSQLINST=$(aws cloudformation describe-stacks --region $MYREGION --stack-name mySQLAutoBenchmarking --query "Stacks[][].Outputs[?OutputKey=='mySQLPrivIP'].OutputValue" --output text)
+DBT2INST=$(aws cloudformation describe-stacks --region $MYREGION --stack-name mySQLAutoBenchmarking --query "Stacks[][].Outputs[?OutputKey=='dbt2PrivIP'].OutputValue" --output text)
+
+# create ssm-user
+adduser -U -m ssm-user
+tee /etc/sudoers.d/ssm-agent-users <<'EOF'
+# User rules for ssm-user
+ssm-user ALL=(ALL) NOPASSWD:ALL
+EOF
+chmod 440 /etc/sudoers.d/ssm-agent-users
+
+#creating .ssh 
+mkdir -p /home/ssm-user/.ssh
+
+#copying .ssh from ec2-user to ssm-user
+cp -r /home/ec2-user/.ssh /home/ssm-user
+
+# set permissions
+chown -R ssm-user:ssm-user /home/ssm-user/.ssh
+chmod 700 /home/ssm-user/.ssh
+
+# set custom alias
+echo "alias ll='ls -larth'" > /etc/profile.d/user-alias.sh
+
+# export instance private IPs
+echo "export MYSQLINST=$MYSQLINST" > /etc/profile.d/custom-envs.sh
+echo "export MYSQLINST=$DBT2INST" >> /etc/profile.d/custom-envs.sh
+
+#create required dirs
+mkdir -p /home/ssm-user/bench /home/ssm-user/bench/mysql # benchmarking dir
+mkdir -p /mysql-data/mysql-data-dir # MySQL data directory. This is the location of mysql data-dir. If you change this, remember set the same value in DATA_DIR_BASE of autobench.conf
+
+# create soft link
+ln -s /mysql-data/mysql-data-dir /home/ssm-user/bench/mysql-data-dir
+
+chown -R ssm-user:ssm-user /home/ssm-user/bench /mysql-data/mysql-data-dir /home/ssm-user/bench/mysql-data-dir
+
+# ===================================================================================
 # rpm -Uvh https://repo.mysql.com/mysql80-community-release-el7-3.noarch.rpm
 # yum-config-manager --disable mysql57-community
 # yum-config-manager --enable mysql80-community
@@ -91,42 +138,4 @@ yum install git jq -y
 # mysql --connect-expired-password -u root --password="$TEMP_PASS" mysql < /root/my.sql
 # rm -fr /root/my.sql
 
-# create ssm-user
-adduser -U -m ssm-user
-tee /etc/sudoers.d/ssm-agent-users <<'EOF'
-# User rules for ssm-user
-ssm-user ALL=(ALL) NOPASSWD:ALL
-EOF
-chmod 440 /etc/sudoers.d/ssm-agent-users
-
-#creating .ssh 
-mkdir -p /home/ssm-user/.ssh
-#chmod -R ssm-user:ssm-user /home/ssm-user
-#chmod 700 /home/ssm-user
-
-#copying .ssh from ec2-user to ssm-user
-cp -r /home/ec2-user/.ssh /home/ssm-user
-
-# set permissions
-chown -R ssm-user:ssm-user /home/ssm-user/.ssh
-chmod 700 /home/ssm-user/.ssh
-
-echo "alias ll='ls -larth'" > /etc/profile.d/custom-alias.sh
-
-# create new directory for MySQL data
-# mkdir -p /mysql-data/mysql
-
-# set ownership of new directory to match existing one
-# chown --reference=/var/lib/mysql /mysql-data/mysql
-
-# set permissions on new directory to match existing one
-# chmod --reference=/var/lib/mysql /mysql-data/mysql
-
-# copy all files in default directory, to new one, retaining perms (-p)
-# cp -rp /var/lib/mysql/* /mysql-data/mysql/
-# rm -fr /var/lib/mysql
-
-# create soft link
-# ln -s /mysql-data/mysql /var/lib/mysql
-# chown -h --reference=/mysql-data/mysql /var/lib/mysql
 
