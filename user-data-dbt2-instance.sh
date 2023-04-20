@@ -25,11 +25,11 @@ MYREGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/region)
 aws configure set region $MYREGION
 
 # get instance private IPs
-MYSQLINST=$(aws cloudformation describe-stacks --region $MYREGION --stack-name mySQLAutoBenchmarking --query "Stacks[][].Outputs[?OutputKey=='mySQLPrivIP'].OutputValue" --output text)
-DBT2INST=$(aws cloudformation describe-stacks --region $MYREGION --stack-name mySQLAutoBenchmarking --query "Stacks[][].Outputs[?OutputKey=='dbt2PrivIP'].OutputValue" --output text)
+MYSQLINST=$(aws cloudformation describe-stacks --region $MYREGION --stack-name $BENCHMARK_NAME --query "Stacks[][].Outputs[?OutputKey=='mySQLPrivIP'].OutputValue" --output text)
+DBT2INST=$(aws cloudformation describe-stacks --region $MYREGION --stack-name $BENCHMARK_NAME --query "Stacks[][].Outputs[?OutputKey=='dbt2PrivIP'].OutputValue" --output text)
 
 # get pem key
-KP_ID=$(aws cloudformation describe-stacks --region $MYREGION --stack-name mySQLAutoBenchmarking --query "Stacks[][].Outputs[?OutputKey=='keyPairId'].OutputValue" --output text)
+KP_ID=$(aws cloudformation describe-stacks --region $MYREGION --stack-name $BENCHMARK_NAME --query "Stacks[][].Outputs[?OutputKey=='keyPairId'].OutputValue" --output text)
 
 aws ssm get-parameter --region $MYREGION --name /ec2/keypair/$KP_ID --with-decryption --query Parameter.Value --output text > /home/ssm-user/.ssh/MySQLKeyPair.pem
 

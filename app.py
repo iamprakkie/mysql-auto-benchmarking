@@ -23,8 +23,7 @@ class bcolors:
     UNDERLINE = '\033[4m'
     
 dirname = os.path.dirname(__file__)
-mySQLAppName = "mySQLAutoBenchmarking"
-
+mySQLAppName = os.getenv("BENCHMARK_NAME")
 instType = os.getenv("MYSQL_INST_TYPE", "t3.medium")
 volSize = int(os.getenv("MYSQL_VOL_SIZE", 50))
 volIOPS = int(os.getenv("MYSQL_VOL_IOPS", 150))

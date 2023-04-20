@@ -29,6 +29,7 @@ This example includes:
 
 1. Set below mentioned environment variables with required values
     ```bash
+    export BENCHMARK_NAME="mySQLAutoBenchmarking" # give unique name for your benchmarking. This will your CDK app name
     export MYSQL_INST_TYPE="r5.8xlarge" # when not set, will use t3.medium as default value
     export MYSQL_VOL_SIZE=500 # when not set, will use 50 (GB) as default value
     export MYSQL_VOL_TYPE="io1" # when not set, will use gp3 as default value
