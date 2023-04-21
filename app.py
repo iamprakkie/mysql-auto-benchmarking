@@ -91,9 +91,12 @@ class EC2InstanceStack(Stack):
                     iam.PolicyStatement(
                     effect = iam.Effect.ALLOW,
                     actions = ['ec2:DescribeInstances'],
-                    resources = [ec2Arn]
+                    resources = [ec2Arn],
+                    conditions = {
+                        "ForAnyValue:StringEquals": {"aws:Ec2InstanceSourceVPC": vpc.vpc_id}
+                    }
                     ),
-                ]))        
+                ]))
 
         # Instance Role and SSM Managed Policy for DBT2 instance
         dbt2InstRole = iam.Role(self, "DBT2InstanceSSM", assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"))
