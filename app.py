@@ -86,7 +86,7 @@ class EC2InstanceStack(Stack):
                     iam.PolicyStatement(
                     effect = iam.Effect.ALLOW,
                     actions = ['ec2:DescribeInstances'],
-                    resources = [*]
+                    resources = ["*"]
                     ),
                 ]))
 
