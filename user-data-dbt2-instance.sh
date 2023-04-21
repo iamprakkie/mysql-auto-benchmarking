@@ -66,9 +66,18 @@ chown -R ssm-user:ssm-user /home/ssm-user/.ssh
 echo "alias ll='ls -larth'" > /etc/profile.d/user-alias.sh
 
 # create custom envs
+echo "export USER=ssm-user" > /etc/profile.d/custom-envs.sh
 echo "export MYSQLINST=$MYSQLINST" > /etc/profile.d/custom-envs.sh
 echo "export MYDBT2INST=$MYDBT2INST" >> /etc/profile.d/custom-envs.sh
 echo "export BENCHMARK_NAME=$BENCHMARK_NAME" >> /etc/profile.d/custom-envs.sh
+
+#create required dirs
+mkdir -p /home/ssm-user/bench /home/ssm-user/bench/mysql # benchmarking dir. Ensure autobench.conf reflects this configuration.
+mkdir -p /home/ssm-user/bench/tarballs # Location where tar.gz of MySQL, DBT2 and Sysbench will be placed. Ensure autobench.conf and setup_dbt2.sh reflects this configuration.
+mkdir -p /home/ssm-user/bench/sysbench # sysbench dir. This is also default-directory. Ensure autobench.conf reflects this configuration.
+
+# change ownership
+chown -R ssm-user:ssm-user /home/ssm-user/bench
 
 #clone repo
 git clone https://github.com/iamprakkie/mysql-auto-benchmarking.git /home/ssm-user/mysql-auto-benchmarking

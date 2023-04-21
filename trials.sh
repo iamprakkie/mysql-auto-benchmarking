@@ -23,8 +23,8 @@
 #Trial 
 #cd /home/ssm-user/bench
 #./bench_run.sh --default-directory /home/ssm-user/bench/sysbench --init --generate-dbt2-data --skip-run --verbose 2>&1 | tee /home/ssm-user/bench/bench-run-init-output.log
-/home/ssm-user/bench/bench_run.sh --default-directory /home/ssm-user/bench/sysbench --init --generate-dbt2-data --skip-run --verbose > /home/ssm-user/bench/bench-run-init-output.log 2>&1 &
-less -IN +F /home/ssm-user/bench/bench-run-init-output.log
+/home/ssm-user/bench/bench_run.sh --default-directory /home/ssm-user/bench/sysbench --init --generate-dbt2-data --skip-run --verbose 2>&1 | tee /home/ssm-user/bench/bench-run-init-output.log
+
 # TRX_ENGINE="yes" in autobench.conf - done
 
 #######

@@ -34,7 +34,7 @@ tar xfz /home/ssm-user/bench/tarballs/dbt2-0.37.50.16.tar.gz -C /home/ssm-user/b
 cp /home/ssm-user/bench/tarballs/dbt2-0.37.50.16/scripts/bench_run.sh /home/ssm-user/bench/
 cp /home/ssm-user/mysql-auto-benchmarking/sysbench-autobench.conf /home/ssm-user/bench/sysbench/autobench.conf
 
-log 'G' "DBT2 setup COMPLETE. Verify and modify required values in /home/ssm-user/bench/sysbench/autobench.conf"
+log 'G' "DBT2 setup COMPLETE. Verify values in /home/ssm-user/bench/sysbench/autobench.conf"
 
 
 ## AUTOBENCH CONF PENDING##
