@@ -88,11 +88,9 @@ class EC2InstanceStack(Stack):
                     effect = iam.Effect.ALLOW,
                     actions = ['ec2:DescribeInstances'],
                     resources = [ec2Arn],
-                    conditions = [
-                        {
-                            "StringEquals": {"ec2:ResourceTag/aws:cloudformation:stack-name": "mySQLAutoBenchmarkingSTG"}
-                        }
-                    ],
+                    conditions = {
+                        "StringEquals": {"ec2:ResourceTag/aws:cloudformation:stack-name": "mySQLAutoBenchmarkingSTG"}
+                    },
                     ),
                 ]))
 
