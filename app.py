@@ -91,7 +91,8 @@ class EC2InstanceStack(Stack):
                     iam.PolicyStatement(
                     effect = iam.Effect.ALLOW,
                     actions = ['ec2:DescribeInstances'],
-                    resources = [ec2Arn],
+                    resources = ["*"]
+                    # resources = [ec2Arn],
                     conditions = {
                         "ForAnyValue:StringEquals": {"aws:Ec2InstanceSourceVPC": vpc.vpc_id}
                     }
