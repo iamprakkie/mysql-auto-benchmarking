@@ -72,7 +72,6 @@ class EC2InstanceStack(Stack):
 
         # Instance Role and SSM Managed Policy for MySQL instance
         cfnArn = "arn:aws:cloudformation:" + self.region + ":" + self.account + ":stack/" + mySQLAppName + "*"
-        # ec2Arn = "arn:aws:ec2:" + self.region + ":" + self.account + ":instance/*"
 
         mySQLInstRole = iam.Role(self, "MySQLInstanceSSM", assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"))
         mySQLInstRole.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMManagedInstanceCore"))
@@ -92,25 +91,35 @@ class EC2InstanceStack(Stack):
                     effect = iam.Effect.ALLOW,
                     actions = ['ec2:DescribeInstances'],
                     resources = ["*"],
-                    # resources = [ec2Arn],
                     conditions = {
                         "ForAnyValue:StringEquals": {"aws:Ec2InstanceSourceVPC": vpc.vpc_id}
                     }
-                    ),
+                    )
                 ]))
 
         # Instance Role and SSM Managed Policy for DBT2 instance
         dbt2InstRole = iam.Role(self, "DBT2InstanceSSM", assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"))
         dbt2InstRole.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMManagedInstanceCore"))
         dbt2InstRole.attach_inline_policy(
-            iam.Policy(self, 'dbt2IntPolicy',
+            iam.Policy(self, 'dbt2InstCfnPolicy',
                     statements = [
                     iam.PolicyStatement(
                     effect = iam.Effect.ALLOW,
-                    actions = ['cloudformation:Describe*','cloudformation:List*'],
+                    actions = ['cloudformation:DescribeStacks'],
                     resources = [cfnArn]
                 )]))
-
+        dbt2InstRole.attach_inline_policy(
+            iam.Policy(self, 'dbt2InstEc2Policy',
+                    statements = [
+                    iam.PolicyStatement(
+                    effect = iam.Effect.ALLOW,
+                    actions = ['ec2:DescribeInstances'],
+                    resources = ["*"],
+                    conditions = {
+                        "ForAnyValue:StringEquals": {"aws:Ec2InstanceSourceVPC": vpc.vpc_id}
+                    }
+                    )
+                ]))
 
         #Security Group for DBT2 instance
         sg_dbt2 = ec2.SecurityGroup(

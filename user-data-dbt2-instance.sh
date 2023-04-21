@@ -19,6 +19,7 @@ yum install mysql-community-client -y
 #for dbt2
 yum install wget gcc make cmake autoconf mysql-devel -y
 yum install numactl -y
+yum install gnuplot -y
 
 # get region
 MYREGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/region)
@@ -68,4 +69,4 @@ echo "alias ll='ls -larth'" > /etc/profile.d/user-alias.sh
 # export instance private IPs
 echo "export MYSQLINST=$MYSQLINST" > /etc/profile.d/custom-envs.sh
 echo "export MYSQLINST=$DBT2INST" >> /etc/profile.d/custom-envs.sh
-
+echo "export BENCHMARK_NAME=$BENCHMARK_NAME" >> /etc/profile.d/custom-envs.sh

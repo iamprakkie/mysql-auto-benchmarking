@@ -52,6 +52,7 @@ echo "alias ll='ls -larth'" > /etc/profile.d/user-alias.sh
 # export instance private IPs
 echo "export MYSQLINST=$MYSQLINST" > /etc/profile.d/custom-envs.sh
 echo "export MYDBINST=$DBT2INST" >> /etc/profile.d/custom-envs.sh
+echo "export BENCHMARK_NAME=$BENCHMARK_NAME" >> /etc/profile.d/custom-envs.sh
 
 #create required dirs
 mkdir -p /home/ssm-user/bench /home/ssm-user/bench/mysql # benchmarking dir
