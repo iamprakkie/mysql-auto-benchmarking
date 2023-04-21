@@ -43,7 +43,7 @@ This example includes:
     source venv/bin/activate
     pip install -r requirements.txt
     cdk bootstrap
-    cdk deploy
+    cdk deploy $BENCHMARK_NAME
     ```
 
 1. Exit from MySQL instance's SSM session. Then, start SSM session to DBT2 instance.
@@ -72,6 +72,6 @@ This example includes:
 
 * Cleanup all resources created by using cdk destroy from host.
     ```bash
-    cdk destroy
+    cdk destroy $BENCHMARK_NAME
     deactivate
     ```

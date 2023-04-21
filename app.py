@@ -72,6 +72,7 @@ class EC2InstanceStack(Stack):
 
         # Instance Role and SSM Managed Policy for MySQL instance
         cfnArn = "arn:aws:cloudformation:" + self.region + ":" + self.account + ":stack/" + mySQLAppName + "*"
+        ec2Arn = "arn:aws:ec2:" + self.region + ":" + self.account + ":instance/*"
         mySQLInstRole = iam.Role(self, "MySQLInstanceSSM", assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"))
         mySQLInstRole.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMManagedInstanceCore"))
         mySQLInstRole.attach_inline_policy(
@@ -79,10 +80,21 @@ class EC2InstanceStack(Stack):
                     statements = [
                     iam.PolicyStatement(
                     effect = iam.Effect.ALLOW,
-                    actions = ['cloudformation:Describe*','cloudformation:List*','ec2:DescribeInstances'],
+                    # actions = ['cloudformation:DescribeStacks','cloudformation:ListStacks'],
+                    actions = ['cloudformation:DescribeStacks'],
                     resources = [cfnArn]
-                )]))
-
+                    ),
+                    iam.PolicyStatement(
+                    effect = iam.Effect.ALLOW,
+                    actions = ['ec2:DescribeInstances'],
+                    resources = [ec2Arn],
+                    conditions = [
+                        {
+                            "StringEquals": {"ec2:ResourceTag/aws:cloudformation:stack-name": "mySQLAutoBenchmarkingSTG"}
+                        }
+                    ],
+                    ),
+                ]))
 
         # Instance Role and SSM Managed Policy for DBT2 instance
         dbt2InstRole = iam.Role(self, "DBT2InstanceSSM", assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"))
