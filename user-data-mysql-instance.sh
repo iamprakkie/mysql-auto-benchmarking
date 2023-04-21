@@ -13,7 +13,7 @@ rpm -Uvh https://repo.mysql.com/mysql80-community-release-el7-3.noarch.rpm
 yum-config-manager --disable mysql57-community
 yum-config-manager --enable mysql80-community
 rpm --import https://repo.mysql.com/RPM-GPG-KEY-mysql-2022
-yum install git jq -y
+yum install git tree jq -y
 yum install mysql-community-client -y
 
 
@@ -68,7 +68,7 @@ mkdir -p /mysql-data/mysql-data-dir # MySQL data directory. This is the location
 ln -s /mysql-data/mysql-data-dir /home/ssm-user/bench/mysql-data-dir
 
 #change ownership
-chown -R ssm-user:ssm-user /home/ssm-user/bench
+chown -R ssm-user:ssm-user /mysql-data/mysql-data-dir /home/ssm-user/bench
 
 # ===================================================================================
 # rpm -Uvh https://repo.mysql.com/mysql80-community-release-el7-3.noarch.rpm

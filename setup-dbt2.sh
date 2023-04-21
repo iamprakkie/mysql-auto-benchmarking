@@ -6,9 +6,9 @@ set -e
 source ./format_display.sh
 
 
-CURRINST=$(http://169.254.169.254/latest/meta-data/local-ipv4)
+CURRINST=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
 
-if [[ $CURRINSTID != $MYDBT2INST]]; then
+if [[ $CURRINST != $MYDBT2INST ]]; then
     log 'R' "This script need to be run only in DBT2 Instance ($MYDBT2INST)."
     exit 1
 fi
@@ -24,12 +24,18 @@ wget https://dev.mysql.com/get/Downloads/MySQL-Cluster-8.0/mysql-cluster-8.0.32-
 wget https://downloads.mysql.com/source/dbt2-0.37.50.16.tar.gz -P /home/ssm-user/bench/tarballs/
 wget https://downloads.mysql.com/source/sysbench-0.4.12.16.tar.gz -P /home/ssm-user/bench/tarballs/
 
+#unpacking MySQL
+tar xfz /home/ssm-user/bench/tarballs/mysql-cluster-8.0.32-el7-x86_64.tar.gz -C /home/ssm-user/bench/mysql/
+
 #unpacking DBT2
 tar xfz /home/ssm-user/bench/tarballs/dbt2-0.37.50.16.tar.gz -C /home/ssm-user/bench/tarballs/
 
 #copy required files
 cp /home/ssm-user/bench/tarballs/dbt2-0.37.50.16/scripts/bench_run.sh /home/ssm-user/bench/
-cp /home/ssm-user/bench/tarballs/dbt2-0.37.50.16/examples/sysbench_autobench.conf /home/ssm-user/bench/sysbench/autobench.conf
+cp /home/ssm-user/mysql-auto-benchmarking/sysbench-autobench.conf /home/ssm-user/bench/sysbench/autobench.conf
+
+log 'G' "DBT2 setup COMPLETE. Verify and modify required values in /home/ssm-user/bench/sysbench/autobench.conf"
+
 
 ## AUTOBENCH CONF PENDING##
 

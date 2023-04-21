@@ -13,7 +13,7 @@ rpm -Uvh https://repo.mysql.com/mysql80-community-release-el7-3.noarch.rpm
 yum-config-manager --disable mysql57-community
 yum-config-manager --enable mysql80-community
 rpm --import https://repo.mysql.com/RPM-GPG-KEY-mysql-2022
-yum install git jq -y
+yum install git tree jq -y
 yum install mysql-community-client -y
 
 #for dbt2
@@ -69,3 +69,9 @@ echo "alias ll='ls -larth'" > /etc/profile.d/user-alias.sh
 echo "export MYSQLINST=$MYSQLINST" > /etc/profile.d/custom-envs.sh
 echo "export MYDBT2INST=$MYDBT2INST" >> /etc/profile.d/custom-envs.sh
 echo "export BENCHMARK_NAME=$BENCHMARK_NAME" >> /etc/profile.d/custom-envs.sh
+
+#clone repo
+git clone https://github.com/iamprakkie/mysql-auto-benchmarking.git /home/ssm-user/mysql-auto-benchmarking
+
+# change ownership
+chown -R ssm-user:ssm-user /home/ssm-user/mysql-auto-benchmarking

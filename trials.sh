@@ -8,8 +8,8 @@
 #         User ssm-user
 # chmod 600 ~/.ssh/config
 
-# create /home/ssm-user/bench/ndb in mysql instance
-# ensure /home/ssm-user/bench/mysql has unzipped data of binary
+# create /home/ssm-user/bench/ndb in mysql instance - done
+# ensure /home/ssm-user/bench/mysql has unzipped data of binary - done
 # ndb.sh needs ssh -n -l ssm-user. also in oltp_run.sh. Rather try adding --user to start_ndb.sh call in /home/ssm-user/bench/sysbench/src/dbt2-0.37.50.16/scripts/mgm_cluster.sh. Also tried adding env USER=ssm-user
 # SSH_USER=;NDB_USER
 
@@ -22,8 +22,10 @@
 
 #Trial 
 #cd /home/ssm-user/bench
-#./bench_run.sh --default-directory /home/ssm-user/bench/sysbench --init --generate-dbt2-data --skip-run --verbose 2>&1 | tee output.log
-# TRX_ENGINE="yes" in autobench.conf
+#./bench_run.sh --default-directory /home/ssm-user/bench/sysbench --init --generate-dbt2-data --skip-run --verbose 2>&1 | tee /home/ssm-user/bench/bench-run-init-output.log
+/home/ssm-user/bench/bench_run.sh --default-directory /home/ssm-user/bench/sysbench --init --generate-dbt2-data --skip-run --verbose > /home/ssm-user/bench/bench-run-init-output.log 2>&1 &
+less -IN +F /home/ssm-user/bench/bench-run-init-output.log
+# TRX_ENGINE="yes" in autobench.conf - done
 
 #######
 #./bench_run.sh --default-directory /home/ssm-user/bench/sysbench --init --generate-dbt2-data --start --skip-run --verbose 2>&1 | tee output.log
