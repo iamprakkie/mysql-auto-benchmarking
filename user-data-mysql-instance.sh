@@ -7,9 +7,15 @@ mount /dev/sda1 /mysql-data
 cp /etc/fstab /etc/fstab.orig
 echo -e "UUID=`sudo blkid /dev/sda1 -s UUID -o value`\t/mysql-data\txfs\tdefaults,nofail  0  2" >> /etc/fstab
 
-# install mysql 8.0.32
+# install mysql client 8.0.32
 yum update -y
+rpm -Uvh https://repo.mysql.com/mysql80-community-release-el7-3.noarch.rpm
+yum-config-manager --disable mysql57-community
+yum-config-manager --enable mysql80-community
+rpm --import https://repo.mysql.com/RPM-GPG-KEY-mysql-2022
 yum install git jq -y
+yum install mysql-community-client -y
+
 
 #for dbt2
 yum install numactl -y
@@ -26,7 +32,7 @@ BENCHMARK_NAME=$(aws ec2 describe-instances --region $MYREGION --instance-ids $M
 
 # get instance private IPs
 MYSQLINST=$(aws cloudformation describe-stacks --region $MYREGION --stack-name $BENCHMARK_NAME --query "Stacks[][].Outputs[?OutputKey=='mySQLPrivIP'].OutputValue" --output text)
-DBT2INST=$(aws cloudformation describe-stacks --region $MYREGION --stack-name $BENCHMARK_NAME --query "Stacks[][].Outputs[?OutputKey=='dbt2PrivIP'].OutputValue" --output text)
+MYDBT2INST=$(aws cloudformation describe-stacks --region $MYREGION --stack-name $BENCHMARK_NAME --query "Stacks[][].Outputs[?OutputKey=='dbt2PrivIP'].OutputValue" --output text)
 
 # create ssm-user
 adduser -U -m ssm-user
@@ -49,9 +55,9 @@ chmod 700 /home/ssm-user/.ssh
 # set custom alias
 echo "alias ll='ls -larth'" > /etc/profile.d/user-alias.sh
 
-# export instance private IPs
+# create custom envs
 echo "export MYSQLINST=$MYSQLINST" > /etc/profile.d/custom-envs.sh
-echo "export MYDBINST=$DBT2INST" >> /etc/profile.d/custom-envs.sh
+echo "export MYDBT2INST=$MYDBT2INST" >> /etc/profile.d/custom-envs.sh
 echo "export BENCHMARK_NAME=$BENCHMARK_NAME" >> /etc/profile.d/custom-envs.sh
 
 #create required dirs
@@ -61,7 +67,8 @@ mkdir -p /mysql-data/mysql-data-dir # MySQL data directory. This is the location
 # create soft link
 ln -s /mysql-data/mysql-data-dir /home/ssm-user/bench/mysql-data-dir
 
-chown -R ssm-user:ssm-user /home/ssm-user/bench /mysql-data/mysql-data-dir /home/ssm-user/bench/mysql-data-dir
+#change ownership
+chown -R ssm-user:ssm-user /home/ssm-user/bench
 
 # ===================================================================================
 # rpm -Uvh https://repo.mysql.com/mysql80-community-release-el7-3.noarch.rpm

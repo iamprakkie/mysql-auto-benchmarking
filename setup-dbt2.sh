@@ -1,10 +1,22 @@
 #!/bin/bash
 set -e
 
+# This script need to be run in DBT2 machine.
+
 source ./format_display.sh
 
-# create bench dir
-mkdir -p /home/ssm-user/bench /home/ssm-user/bench/tarballs /home/ssm-user/bench/mysql /home/ssm-user/bench/ndb /home/ssm-user/bench/sysbench
+
+CURRINST=$(http://169.254.169.254/latest/meta-data/local-ipv4)
+
+if [[ $CURRINSTID != $MYDBT2INST]]; then
+    log 'R' "This script need to be run only in DBT2 Instance ($MYDBT2INST)."
+    exit 1
+fi
+
+#create required dirs
+mkdir -p /home/ssm-user/bench /home/ssm-user/bench/mysql # benchmarking dir. Ensure autobench.conf reflects this configuration.
+mkdir -p /home/ssm-user/bench/tarballs # Location where tar.gz of MySQL, DBT2 and Sysbench will be placed. Ensure autobench.conf and setup_dbt2.sh reflects this configuration.
+mkdir -p /home/ssm-user/bench/sysbench # sysbench dir. This is also default-directory. Ensure autobench.conf reflects this configuration.
 
 # Download MySQL, DBT2 and Sysbench tarballs
 #wget https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-8.0.32-el7-x86_64.tar.gz -P /home/ssm-user/bench/tarballs/

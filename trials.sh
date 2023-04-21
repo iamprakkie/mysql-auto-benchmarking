@@ -14,8 +14,8 @@
 # SSH_USER=;NDB_USER
 
 # try adding --user in mgm_cluster.sh of dbt2.tar.gz seems FIXES PROBLEM
-# install numactl in dbt2 machine
-# install mysql client in mysql instance as well
+# install numactl in dbt2 machine - done
+# install mysql client in mysql instance as well - done
 # NOT REQ. Set this in autobench.conf - create soft link at mysql instance sudo ln -s /home/ssm-user/bench/mysql/mysql-cluster-8.0.32-el7-x86_64/lib/libmysqlclient.so.21 /usr/lib/libmysqlclient.so.21
 # place sysbench targz in /home/ssm-user/bench/mysql
 
@@ -31,7 +31,7 @@
 #./bench_run.sh --default-directory /home/ssm-user/bench/sysbench --skip-start --verbose 2>&1 | tee output.log
 
 #kill $(lsof -t -i:3316)
-#installing gnuplot in dbt2 machine
+#installing gnuplot in dbt2 machine - done
 
 https://severalnines.com/blog/how-benchmark-performance-mysql-mariadb-using-sysbench/
 

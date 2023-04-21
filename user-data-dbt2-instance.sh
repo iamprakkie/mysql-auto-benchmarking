@@ -33,12 +33,7 @@ BENCHMARK_NAME=$(aws ec2 describe-instances --region $MYREGION --instance-ids $M
 
 # get instance private IPs
 MYSQLINST=$(aws cloudformation describe-stacks --region $MYREGION --stack-name $BENCHMARK_NAME --query "Stacks[][].Outputs[?OutputKey=='mySQLPrivIP'].OutputValue" --output text)
-DBT2INST=$(aws cloudformation describe-stacks --region $MYREGION --stack-name $BENCHMARK_NAME --query "Stacks[][].Outputs[?OutputKey=='dbt2PrivIP'].OutputValue" --output text)
-
-# get pem key
-KP_ID=$(aws cloudformation describe-stacks --region $MYREGION --stack-name $BENCHMARK_NAME --query "Stacks[][].Outputs[?OutputKey=='keyPairId'].OutputValue" --output text)
-
-aws ssm get-parameter --region $MYREGION --name /ec2/keypair/$KP_ID --with-decryption --query Parameter.Value --output text > /home/ssm-user/.ssh/MySQLKeyPair.pem
+MYDBT2INST=$(aws cloudformation describe-stacks --region $MYREGION --stack-name $BENCHMARK_NAME --query "Stacks[][].Outputs[?OutputKey=='dbt2PrivIP'].OutputValue" --output text)
 
 # create ssm-user
 adduser -U -m ssm-user
@@ -50,9 +45,11 @@ chmod 440 /etc/sudoers.d/ssm-agent-users
 
 #creating .ssh 
 mkdir -p /home/ssm-user/.ssh
-# set permissions
-chown -R ssm-user:ssm-user /home/ssm-user/.ssh
 chmod 700 /home/ssm-user/.ssh
+
+# get pem key
+KP_ID=$(aws cloudformation describe-stacks --region $MYREGION --stack-name $BENCHMARK_NAME --query "Stacks[][].Outputs[?OutputKey=='keyPairId'].OutputValue" --output text)
+aws ssm get-parameter --region $MYREGION --name /ec2/keypair/$KP_ID --with-decryption --query Parameter.Value --output text > /home/ssm-user/.ssh/MySQLKeyPair.pem
 chmod 600 /home/ssm-user/.ssh/MySQLKeyPair.pem
 
 # add ssh config entry for mysql instance
@@ -60,13 +57,15 @@ echo "Host $MYSQLINST" >> /home/ssm-user/.ssh/config
 echo "  Hostname $MYSQLINST" >> /home/ssm-user/.ssh/config
 echo "  IdentityFile /home/ssm-user/.ssh/MySQLKeyPair.pem" >> /home/ssm-user/.ssh/config
 echo "  User ssm-user" >> /home/ssm-user/.ssh/config
-
 chmod 600 /home/ssm-user/.ssh/config
+
+# change ownership
+chown -R ssm-user:ssm-user /home/ssm-user/.ssh
 
 # set custom alias
 echo "alias ll='ls -larth'" > /etc/profile.d/user-alias.sh
 
-# export instance private IPs
+# create custom envs
 echo "export MYSQLINST=$MYSQLINST" > /etc/profile.d/custom-envs.sh
-echo "export MYSQLINST=$DBT2INST" >> /etc/profile.d/custom-envs.sh
+echo "export MYDBT2INST=$MYDBT2INST" >> /etc/profile.d/custom-envs.sh
 echo "export BENCHMARK_NAME=$BENCHMARK_NAME" >> /etc/profile.d/custom-envs.sh
