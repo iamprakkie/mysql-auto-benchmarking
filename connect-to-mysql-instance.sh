@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source ./format_display.sh
+
 # checking environment variables
 if [ -z "${BENCHMARK_NAME}" ]; then
     log 'R' "env variable BENCHMARK_NAME not set"; exit 1
