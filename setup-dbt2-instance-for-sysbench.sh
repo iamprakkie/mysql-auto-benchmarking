@@ -5,13 +5,14 @@ set -e
 
 source ./format_display.sh
 
-
 CURRINST=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
 
 if [[ $CURRINST != $MYDBT2INST ]]; then
     log 'R' "This script need to be run only in DBT2 Instance ($MYDBT2INST)."
     exit 1
 fi
+
+log 'G-H' "Setting up DBT2 instance for running sysbench..."
 
 #create required dirs
 mkdir -p /home/ssm-user/bench /home/ssm-user/bench/mysql # benchmarking dir. Ensure autobench.conf reflects this configuration.
@@ -35,45 +36,3 @@ cp /home/ssm-user/bench/tarballs/dbt2-0.37.50.16/scripts/bench_run.sh /home/ssm-
 cp /home/ssm-user/mysql-auto-benchmarking/sysbench-autobench.conf /home/ssm-user/bench/sysbench/autobench.conf
 
 log 'G' "DBT2 setup COMPLETE. Verify values in /home/ssm-user/bench/sysbench/autobench.conf"
-
-
-## AUTOBENCH CONF PENDING##
-
-exit 11
-
-# WAREHOUSE_COUNT=${1:-20}
-
-# mkdir -p /home/ssm-user/dbt2
-# cd /home/ssm-user/dbt2
-# wget https://downloads.mysql.com/source/dbt2-0.37.50.16.tar.gz
-# tar -xvzf dbt2-0.37.50.16.tar.gz
-# cd dbt2-0.37.50.16
-# ./configure --with-mysql
-# sudo make -j 8
-# sudo make install
-
-# #set envs for mysql connection
-# source /home/ssm-user/mysql-dbt2-benchmarking/envs-for-mysql.sh
-
-# cp /home/ssm-user/mysql-dbt2-benchmarking/altered_mysql_load_sp.sh /home/ssm-user/dbt2/dbt2-0.37.50.16/scripts/mysql/mysql_load_sp.sh
-# cp /home/ssm-user/mysql-dbt2-benchmarking/altered_mysql_load_db.sh /home/ssm-user/dbt2/dbt2-0.37.50.16/scripts/mysql/mysql_load_db.sh
-
-# log 'G-H' "Generating data..."
-# mkdir -p /home/ssm-user/dbt2/data
-# rm -fr /home/ssm-user/dbt2/data/*
-# /home/ssm-user/dbt2/dbt2-0.37.50.16/src/datagen -w $WAREHOUSE_COUNT -d /home/ssm-user/dbt2/data --mysql
-
-# # convert customer data to UTF-8 (utf8mb4 is the default in MySQL 8.0)
-# log 'G-H' "Converting to UTF-8..."
-# for filename in `find /home/ssm-user/dbt2/data  -type f -name \*.data`; do
-#     echo $filename
-#     mv $filename $filename.bak
-#     iconv -f ISO-8859-1 -t UTF-8 $filename.bak -o $filename
-#     rm $filename.bak
-# done
-
-# log 'G-H' "Loading data into dbt2 database"
-# /home/ssm-user/dbt2/dbt2-0.37.50.16/scripts/mysql/mysql_load_db.sh --local --path /home/ssm-user/dbt2/data --mysql-path $MYSQL_PATH --database dbt2 --host $MYSQL_HOST_IP --user benchmarker --password $BENCHMARKER_PWD
-
-# log 'G-H' "Loading stored procedures into dbt2 database"
-# /home/ssm-user/dbt2/dbt2-0.37.50.16/scripts/mysql/mysql_load_sp.sh --client-path $MYSQL_DIR --sp-path /home/ssm-user/dbt2/dbt2-0.37.50.16/storedproc/mysql --host $MYSQL_HOST_IP --user benchmarker --password $BENCHMARKER_PWD

@@ -137,14 +137,14 @@ class EC2InstanceStack(Stack):
             id="mysql-access-sg",
             vpc=vpc,
             allow_all_outbound=True,
-            description="Allow access to 3306 only from security group of DBT2 instance",
+            description="Allow access to 3316 only from security group of DBT2 instance",
             security_group_name = "mysql-access-sg"
         )
 
         sg_mysql.add_ingress_rule(
             # peer=ec2.Peer.ipv4(vpc.vpc_cidr_block),
             peer=sg_dbt2,
-            connection=ec2.Port.tcp(3306),
+            connection=ec2.Port.tcp(3316),
             description="MySQL access"
         )
 

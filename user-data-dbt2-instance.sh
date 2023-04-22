@@ -67,7 +67,7 @@ echo "alias ll='ls -larth'" > /etc/profile.d/user-alias.sh
 
 # create custom envs
 echo "export USER=ssm-user" > /etc/profile.d/custom-envs.sh
-echo "export MYSQLINST=$MYSQLINST" > /etc/profile.d/custom-envs.sh
+echo "export MYSQLINST=$MYSQLINST" >> /etc/profile.d/custom-envs.sh
 echo "export MYDBT2INST=$MYDBT2INST" >> /etc/profile.d/custom-envs.sh
 echo "export BENCHMARK_NAME=$BENCHMARK_NAME" >> /etc/profile.d/custom-envs.sh
 
