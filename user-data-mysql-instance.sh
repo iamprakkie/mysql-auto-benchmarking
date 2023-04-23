@@ -68,89 +68,16 @@ mkdir -p /mysql-data/mysql-data-dir # MySQL data directory. This is the location
 # create soft link
 ln -s /mysql-data/mysql-data-dir /home/ssm-user/bench/mysql-data-dir
 
-#change ownership
+# change ownership
 chown -R ssm-user:ssm-user /mysql-data/mysql-data-dir /home/ssm-user/bench
 
-# ===================================================================================
-# rpm -Uvh https://repo.mysql.com/mysql80-community-release-el7-3.noarch.rpm
-# yum-config-manager --disable mysql57-community
-# yum-config-manager --enable mysql80-community
-# rpm --import https://repo.mysql.com/RPM-GPG-KEY-mysql-2022
-# yum install mysql-community-server -y
-# systemctl enable mysqld
-# systemctl start mysqld
 
-# changing mysql datadir
-# stop MySQL before copying over files
-# sleep 10
-# systemctl stop mysqld
+# Enable RPS
 
-# create new directory for MySQL data
-# mkdir -p /mysql-data/mysql
+sudo sh -c 'for x in /sys/class/net/eth0/queues/rx-*; do echo ffffffff > $x/rps_cpus; done' 
+sudo sh -c "echo 4096 > /sys/class/net/eth0/queues/rx-0/rps_flow_cnt"
 
-# set ownership of new directory to match existing one
-# chown --reference=/var/lib/mysql /mysql-data/mysql
+sudo sh -c "echo 4096 > /sys/class/net/eth0/queues/rx-1/rps_flow_cnt"
 
-# set permissions on new directory to match existing one
-# chmod --reference=/var/lib/mysql /mysql-data/mysql
-
-# copy all files in default directory, to new one, retaining perms (-p)
-# cp -rp /var/lib/mysql/* /mysql-data/mysql/
-# rm -fr /var/lib/mysql
-
-# create soft link
-# ln -s /mysql-data/mysql /var/lib/mysql
-# chown -h --reference=/mysql-data/mysql /var/lib/mysql
-
-# set tmp dir
-# mkdir -p /mysql-data/mysql-tmpdir
-
-# set ownership of new directory to match existing one
-# chown --reference=/var/lib/mysql /mysql-data/mysql-tmpdir
-
-# set permissions on new directory to match existing one
-# chmod --reference=/var/lib/mysql /mysql-data/mysql-tmpdir
-
-#p opulate tmpdir in my.cnf
-# echo "tmpdir = /mysql-data/mysql-tmpdir" >> /etc/my.cnf
-
-# set bind address
-# MYPRIVATEIP=`curl -s http://169.254.169.254/latest/meta-data/local-ipv4`
-# echo "bind-address = $MYPRIVATEIP" >> /etc/my.cnf
-
-# set local-infile
-#echo "[client]" >> /etc/my.cnf
-#echo "local-infile = 1" >> /etc/my.cnf
-#echo "[server]" >> /etc/my.cnf
-# echo "local_infile=ON" >> /etc/my.cnf
-#echo "[client]" >> /etc/my.cnf
-#echo "local_infile=ON" >> /etc/my.cnf
-
-#start mysql
-# systemctl start mysqld
-
-# Setup mysql users
-
-# MYREGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/region)
-# aws configure set region $MYREGION
-
-#get required stack output
-# MYSQL_REGION=$(aws cloudformation describe-stacks --stack-name 'mySQLBenchmarking' --query "Stacks[][].Outputs[?OutputKey=='mysqlRegion'].OutputValue" --output text)
-# ROOT_SECRET_ID=$(aws cloudformation describe-stacks --stack-name 'mySQLBenchmarking' --query "Stacks[][].Outputs[?OutputKey=='mysqlRootSecret'].OutputValue" --output text)
-# BENCHMARKER_SECRET_ID=$(aws cloudformation describe-stacks --stack-name 'mySQLBenchmarking' --query "Stacks[][].Outputs[?OutputKey=='mysqlBenchmarkerSecret'].OutputValue" --output text)
-
-#get new passwords from secret
-# ROOT_PWD=$(aws secretsmanager get-secret-value --region $MYSQL_REGION --secret-id $ROOT_SECRET_ID --query SecretString --output text)
-# BENCHMARKER_PWD=$(aws secretsmanager get-secret-value --region $MYSQL_REGION --secret-id $BENCHMARKER_SECRET_ID --query SecretString --output text)
-
-# export TEMP_PASS=`grep 'temporary password' /var/log/mysqld.log|awk '{print $13}'`
-# echo "ALTER USER 'root'@'localhost' IDENTIFIED BY '$ROOT_PWD';" > /root/my.sql
-# echo "GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' WITH GRANT OPTION;" >> /root/my.sql
-# echo "CREATE USER 'benchmarker'@'%' IDENTIFIED BY '$BENCHMARKER_PWD';" >> /root/my.sql
-# echo "GRANT ALL PRIVILEGES ON *.* TO 'benchmarker'@'%' WITH GRANT OPTION;" >> /root/my.sql
-# echo "FLUSH PRIVILEGES;" >> /root/my.sql
-# sleep 3
-# mysql --connect-expired-password -u root --password="$TEMP_PASS" mysql < /root/my.sql
-# rm -fr /root/my.sql
-
-
+# Enable RFS
+sudo sh -c "echo 32768 > /proc/sys/net/core/rps_sock_flow_entries"

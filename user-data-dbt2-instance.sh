@@ -84,3 +84,13 @@ git clone https://github.com/iamprakkie/mysql-auto-benchmarking.git /home/ssm-us
 
 # change ownership
 chown -R ssm-user:ssm-user /home/ssm-user/mysql-auto-benchmarking
+
+# Enable RPS
+
+sudo sh -c 'for x in /sys/class/net/eth0/queues/rx-*; do echo ffffffff > $x/rps_cpus; done' 
+sudo sh -c "echo 4096 > /sys/class/net/eth0/queues/rx-0/rps_flow_cnt"
+
+sudo sh -c "echo 4096 > /sys/class/net/eth0/queues/rx-1/rps_flow_cnt"
+
+# Enable RFS
+sudo sh -c "echo 32768 > /proc/sys/net/core/rps_sock_flow_entries"
