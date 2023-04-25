@@ -17,6 +17,6 @@ log 'G-H' "Initializing sysbench and generating sample data..."
 /home/ssm-user/bench/bench_run.sh --default-directory /home/ssm-user/bench/sysbench --init --generate-dbt2-data --skip-run --verbose > /home/ssm-user/bench/sysbench-init-output.log 2>&1 
 
 mkdir -p /home/ssm-user/bench/mysql/sysbench-0.4.12.16/bin
-ln -s /home/ssm-user/bench/sysbench/src/sysbench-0.4.12.16/sysbench/sysbench /home/ssm-user/bench/mysql/sysbench-0.4.12.16/bin/sysbench
+ln -sf /home/ssm-user/bench/sysbench/src/sysbench-0.4.12.16/sysbench/sysbench /home/ssm-user/bench/mysql/sysbench-0.4.12.16/bin/sysbench
 
 log 'G' "Sysbench initialization COMPLETE. Initilazation log is available at /home/ssm-user/bench/sysbench-init-output.log."

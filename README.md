@@ -35,12 +35,14 @@
 
 1. Setup DBT2 using below command.
     ```bash
-    sh /home/ssm-user/mysql-auto-benchmarking/setup-dbt2-instance-for-sysbench.sh
+    cd /home/ssm-user/mysql-auto-benchmarking
+    sh ./setup-dbt2-instance-for-sysbench.sh
     ```
 
 1. Initialize sysbench using below command.
     ```bash
-    sh /home/ssm-user/mysql-auto-benchmarking/init-sysbench.sh
+    cd /home/ssm-user/mysql-auto-benchmarking
+    sh ./init-sysbench.sh
     ```
 
 1. Run sysbench below command.
