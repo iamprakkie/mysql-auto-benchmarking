@@ -134,3 +134,6 @@ dmypy.json
 # cdk files
 cdk.out
 /*.bkp
+
+# other files
+.env_vars
