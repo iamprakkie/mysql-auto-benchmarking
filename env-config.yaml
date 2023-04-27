@@ -1,6 +1,6 @@
 # Configure required environment values for benchmarking
 environments:
-  - name: "r5.8xlarge gp2 Environment"
+  - name: "r5.8xlarge gp2 Environment" # Give unique name here
     region: "us-west-2"
     instancetype: "r5.8xlarge" # EC2 instance type. If r5b instance is set here, volume type defaults to io2 block express irrespective of configuration mentioned here.
     volumetype: "gp2" # EBS volume type
