@@ -24,6 +24,7 @@ class bcolors:
     
 dirname = os.path.dirname(__file__)
 mySQLAppName = os.getenv("BENCHMARK_NAME")
+region = os.getenv("BENCHMARK_REGION")
 instType = os.getenv("MYSQL_INST_TYPE", "t3.medium")
 volSize = int(os.getenv("MYSQL_VOL_SIZE", 50))
 volIOPS = int(os.getenv("MYSQL_VOL_IOPS", 150))
@@ -71,7 +72,7 @@ class EC2InstanceStack(Stack):
             )
 
         # Instance Role and SSM Managed Policy for MySQL instance
-        cfnArn = "arn:aws:cloudformation:" + self.region + ":" + self.account + ":stack/" + mySQLAppName + "*"
+        cfnArn = "arn:aws:cloudformation:" + region + ":" + self.account + ":stack/" + mySQLAppName + "*"
 
         mySQLInstRole = iam.Role(self, "MySQLInstanceSSM", assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"))
         mySQLInstRole.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMManagedInstanceCore"))
@@ -248,7 +249,7 @@ class EC2InstanceStack(Stack):
         CfnOutput(self, "dbt2PrivIP", value=dbt2Instance.instance_private_ip, export_name=mySQLAppName+'ExportedDBT2PrivIP')        
         # CfnOutput(self, "mysqlRootSecret", value=mysql_root_secret.secret_name, export_name=mySQLAppName+'ExportedMySQLRootSecret')
         # CfnOutput(self, "mysqlBenchmarkerSecret", value=mysql_benchmarker_secret.secret_name, export_name=mySQLAppName+'ExportedMySQLBenchmarkerSecret')
-        CfnOutput(self,"mysqlRegion",value=self.region, export_name=mySQLAppName+'ExportedMySQLRegion')
+        CfnOutput(self,"mysqlRegion",value=region, export_name=mySQLAppName+'ExportedMySQLRegion')
         #CfnOutput(self, "sgId", value=sg_mysql.security_group_id, export_name=mySQLAppName+'ExportedSgId')
         CfnOutput(self,"keyPairId", value=kp_mysql.attr_key_pair_id, export_name=mySQLAppName+'ExportedKeyPairId')
         
