@@ -12,6 +12,10 @@ if [[ $CURRINST != $MYDBT2INST ]]; then
     exit 1
 fi
 
+log 'G-H' "Cleaning up any previous instance of sysbench..."
+
+/home/ssm-user/bench/bench_run.sh --default-directory /home/ssm-user/bench/sysbench --stop --skip-run --skip-start --cleanup 
+
 log 'G-H' "Initializing sysbench and generating sample data..."
 
 /home/ssm-user/bench/bench_run.sh --default-directory /home/ssm-user/bench/sysbench --init --generate-dbt2-data --skip-run --verbose > /home/ssm-user/bench/sysbench-init-output.log 2>&1 
