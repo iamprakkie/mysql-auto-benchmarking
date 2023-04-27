@@ -23,12 +23,12 @@ class bcolors:
     UNDERLINE = '\033[4m'
     
 dirname = os.path.dirname(__file__)
-mySQLAppName = os.getenv("BENCHMARK_NAME", "MySQLAutoBenchmarking")
-region = os.getenv("BENCHMARK_REGION")
-instType = os.getenv("MYSQL_INST_TYPE", "t3.medium")
+mySQLAppName = str(os.getenv("BENCHMARK_NAME", "MySQLAutoBenchmarking"))
+region = str(os.getenv("BENCHMARK_REGION",  "us-west-2"))
+instType = str(os.getenv("MYSQL_INST_TYPE", "t3.medium"))
 volSize = int(os.getenv("MYSQL_VOL_SIZE", 50))
 volIOPS = int(os.getenv("MYSQL_VOL_IOPS", 150))
-inputVolType = os.getenv("MYSQL_VOL_TYPE", "gp3")
+inputVolType = str(os.getenv("MYSQL_VOL_TYPE", "gp3"))
 
 if inputVolType.lower() == 'gp2':
     volType = ec2.EbsDeviceVolumeType.GP2
@@ -70,7 +70,7 @@ class EC2InstanceStack(Stack):
             virtualization=ec2.AmazonLinuxVirt.HVM,
             storage=ec2.AmazonLinuxStorage.GENERAL_PURPOSE
             )
-
+        
         # Instance Role and SSM Managed Policy for MySQL instance
         cfnArn = "arn:aws:cloudformation:" + region + ":" + self.account + ":stack/" + mySQLAppName + "*"
 
