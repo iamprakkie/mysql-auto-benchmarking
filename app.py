@@ -1,4 +1,5 @@
 import os
+import boto3
 
 from constructs import Construct
 from aws_cdk.aws_s3_assets import Asset
@@ -6,8 +7,10 @@ from aws_cdk import (
     aws_ec2 as ec2,
     aws_iam as iam,
     # aws_secretsmanager as secretsmanager,
-    aws_ssm as ssm,
-    aws_kms as kms,
+    # aws_ssm as ssm,
+    # aws_kms as kms,
+    aws_s3 as s3,
+    aws_s3_deployment as s3deploy,
     App, Stack, CfnOutput 
 )
 
@@ -33,6 +36,8 @@ instType = str(os.getenv("MYSQL_INST_TYPE", "t3.medium"))
 volSize = int(os.getenv("MYSQL_VOL_SIZE", 50))
 volIOPS = int(os.getenv("MYSQL_VOL_IOPS", 150))
 inputVolType = str(os.getenv("MYSQL_VOL_TYPE", "gp3"))
+autobenchConf = str(os.getenv("MYSQL_AUTOBENCH_CONF", "fine-tuned-sysbench-autobench.conf"))
+envName = str(os.getenv("BENCHMARK_ENV_NAME", "MySQLAutoBenchmarking"))
 
 if inputVolType.lower() == 'gp2':
     volType = ec2.EbsDeviceVolumeType.GP2
@@ -159,7 +164,7 @@ class EC2InstanceStack(Stack):
             description="SSH access"
         )        
 
-        kp_mysql = ec2.CfnKeyPair(self, "MySQLCfnKeyPair", key_name=mySQLAppName+'MySQLCfnKeyPair')
+        kp_mysql = ec2.CfnKeyPair(self, "MySQLCfnKeyPair", key_name='MySQLCfnKeyPair'+mySQLAppName)
         #kp_pem = ssm.StringParameter.value_for_secure_string_parameter(self,kp_mysql.attr_key_pair_id,1)
 
         # mySQL Instance
@@ -236,6 +241,22 @@ class EC2InstanceStack(Stack):
             )
         asset.grant_read(dbt2Instance.role)
 
+        # Create S3 bucket to share artifacts
+        s3_bucket = s3.Bucket(self, 'S3Bucket'+mySQLAppName, bucket_name=mySQLAppName+'-artifacts', versioned=True)
+        s3_bucket.grant_read_write(mySQLInstance.role)
+        s3_bucket.grant_read_write(dbt2Instance.role)
+
+        # s3_client = boto3.client('s3')
+        # with open(os.path.join(dirname, envName.replace(' ', "-")+'.env_vars'),'rb') as fs3:
+        #     s3_client.upload_fileobj(fs3, mySQLAppName+'-artifacts', envName.replace(' ', "-")+'.env_vars')
+
+        # envDeployment = s3deploy.BucketDeployment(self, 'S3BucketDeployment'+mySQLAppName,
+        #     sources=[s3deploy.Source.asset(os.path.join(dirname),{exclude: ['**', '!onlyThisFile.txt'] })],
+        #     #os.path.join(dirname, envName.replace(' ', "-")+'.env_vars')
+        #     destination_bucket=s3_bucket,
+        #     access_control=s3.BucketAccessControl.PRIVATE,
+        # )
+
         # mysqlRootkey = kms.Key(self, "MySQLRootKMS")
         # mysqlBenchmarkerkey = kms.Key(self, "MySQLBenchmarkerKMS")
         # mysql_root_secret = secretsmanager.Secret(self, "MySQLRootSecret", generate_secret_string=secretsmanager.SecretStringGenerator(exclude_punctuation=False,exclude_characters="'\\/\"`$;,|:\{\}\[\]\(\)\<\>&"), encryption_key=mysqlRootkey,)
@@ -246,16 +267,16 @@ class EC2InstanceStack(Stack):
         # mysql_benchmarker_secret.grant_read(dbt2Instance.role)
 
         #Cloudformation Outputs
-        CfnOutput(self, 'vpcId', value=vpc.vpc_id, export_name=mySQLAppName+'ExportedVpcId')
-        CfnOutput(self, "mySQLInstId", value=mySQLInstance.instance_id, export_name=mySQLAppName+'ExportedMySQLInstId')
-        CfnOutput(self, "mySQLPrivIP", value=mySQLInstance.instance_private_ip, export_name=mySQLAppName+'ExportedMySQLPrivIP')
-        CfnOutput(self, "dbt2InstId", value=dbt2Instance.instance_id, export_name=mySQLAppName+'ExportedDBT2InstId')
-        CfnOutput(self, "dbt2PrivIP", value=dbt2Instance.instance_private_ip, export_name=mySQLAppName+'ExportedDBT2PrivIP')        
-        # CfnOutput(self, "mysqlRootSecret", value=mysql_root_secret.secret_name, export_name=mySQLAppName+'ExportedMySQLRootSecret')
-        # CfnOutput(self, "mysqlBenchmarkerSecret", value=mysql_benchmarker_secret.secret_name, export_name=mySQLAppName+'ExportedMySQLBenchmarkerSecret')
-        CfnOutput(self,"mysqlRegion",value=region, export_name=mySQLAppName+'ExportedMySQLRegion')
-        #CfnOutput(self, "sgId", value=sg_mysql.security_group_id, export_name=mySQLAppName+'ExportedSgId')
-        CfnOutput(self,"keyPairId", value=kp_mysql.attr_key_pair_id, export_name=mySQLAppName+'ExportedKeyPairId')
+        CfnOutput(self, 'vpcId', value=vpc.vpc_id, export_name='ExportedVpcId'+mySQLAppName)
+        CfnOutput(self, "mySQLInstId", value=mySQLInstance.instance_id, export_name='ExportedMySQLInstId'+mySQLAppName)
+        CfnOutput(self, "mySQLPrivIP", value=mySQLInstance.instance_private_ip, export_name='ExportedMySQLPrivIP'+mySQLAppName)
+        CfnOutput(self, "dbt2InstId", value=dbt2Instance.instance_id, export_name='ExportedDBT2InstId'+mySQLAppName)
+        CfnOutput(self, "dbt2PrivIP", value=dbt2Instance.instance_private_ip, export_name='ExportedDBT2PrivIP'+mySQLAppName)
+        # CfnOutput(self, "mysqlRootSecret", value=mysql_root_secret.secret_name, export_name='ExportedMySQLRootSecret'+mySQLAppName)
+        # CfnOutput(self, "mysqlBenchmarkerSecret", value=mysql_benchmarker_secret.secret_name, export_name='ExportedMySQLBenchmarkerSecret'+mySQLAppName)
+        CfnOutput(self,"mysqlRegion",value=region, export_name='ExportedMySQLRegion'+mySQLAppName)
+        #CfnOutput(self, "sgId", value=sg_mysql.security_group_id, export_name='ExportedSgId'+mySQLAppName)
+        CfnOutput(self,"keyPairId", value=kp_mysql.attr_key_pair_id, export_name='ExportedKeyPairId'+mySQLAppName)
         
 app = App()
 EC2InstanceStack(app, mySQLAppName)

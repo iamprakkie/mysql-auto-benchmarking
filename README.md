@@ -26,7 +26,6 @@
     python3 -m pip install --upgrade pip
     pip install -r requirements.txt    
     cdk bootstrap
-    # cdk deploy $BENCHMARK_NAME
     ```
 
 1. Start SSM session to DBT2 instance.

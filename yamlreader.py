@@ -23,8 +23,14 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
+# Get config file name as command line argument
+if len(os.sys.argv) > 1:
+    configFileName = os.sys.argv[1]
+else:
+    configFileName = 'env-config.yaml'
+
 # Read environments config file
-with open(os.path.join(os.path.dirname(__file__), 'env-config.yaml'), 'r') as f:
+with open(os.path.join(os.path.dirname(__file__), configFileName), 'r') as f:
     config = yaml.load(f, Loader=yaml.Loader)
 
 envs = config['environments']
@@ -39,7 +45,7 @@ for env in envs:
         iops = str(env['iops'])
 
     # Create benchmark name    
-    benchmarkName = "autobench-" + env['instancetype'].replace(".", "-") + "-" + volType + "-" + iops + "-" +str(uuid.uuid1())
+    benchmarkName = "autobench-" + env['instancetype'].replace(".", "-") + "-" + volType + "-" + iops + "-" +str(uuid.uuid1())[:8]
     print(f"\t{bcolors.OKORANGE}Benchmark name: {benchmarkName}{bcolors.ENDC}")
 
     # Create env export file for every environment
@@ -51,6 +57,7 @@ for env in envs:
         fw.write('export MYSQL_VOL_IOPS=' + iops + '\n')
         fw.write('export MYSQL_VOL_TYPE=' + volType + '\n')
         fw.write('export MYSQL_AUTOBENCH_CONF=' + env['autobenchconf'] + '\n')
+        fw.write('export BENCHMARK_ENV_NAME=' + env['name'] + '\n')
     
     # Close the file
     fw.close()
@@ -64,7 +71,8 @@ for env in envs:
         'MYSQL_VOL_SIZE': str(env['volumesize']),
         'MYSQL_VOL_IOPS': iops,
         'MYSQL_VOL_TYPE': volType,
-        'MYSQL_AUTOBENCH_CONF': str(env['autobenchconf'])
+        'MYSQL_AUTOBENCH_CONF': str(env['autobenchconf']),
+        'BENCHMARK_ENV_NAME': str(env['name'])
     }
 
     # cdk_command = ['/home/ec2-user/dev/mysql-auto-benchmarking-multi-env-branch/mysql-auto-benchmarking/venv/bin/cdk', 'synth']
