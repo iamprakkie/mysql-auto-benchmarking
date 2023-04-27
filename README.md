@@ -21,15 +21,17 @@
 
 1. Deploy CDK to create MySQL instance and DBT2 instance using below mentioned commands. Both instances will be of type mentioned in `$MYSQL_INST_TYPE`. MySQL instance root volume will have 100GB GP3 storage and data volume (/dev/sda1) will be created with values as in env variables mentioned above. /var/lib/mysql will be in /dev/sda1 volume. DBT2 instance root volume will have 100GB GP3 storage. 
     ```bash
+    python3 -m venv .venv
+    source .venv/bin/activate
+    python3 -m pip install --upgrade pip
+    pip install -r requirements.txt
+    
+
     virtualenv --python python3.7 venv
     source venv/bin/activate
     pip install -r requirements.txt
     cdk bootstrap
     cdk deploy $BENCHMARK_NAME
-    python3 -m venv .venv
-    source .venv/bin/activate
-    python3 -m pip install --upgrade pip
-    pip install -r requirements.txt
     ```
 
 1. Start SSM session to DBT2 instance.
