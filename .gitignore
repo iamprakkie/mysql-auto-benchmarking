@@ -136,4 +136,4 @@ cdk.out
 /*.bkp
 
 # other files
-.env_vars
+/*.env_vars

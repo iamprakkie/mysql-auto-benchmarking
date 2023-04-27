@@ -11,7 +11,7 @@
 
 1. Set below mentioned environment variables with required values
     ```bash
-    export BENCHMARK_NAME="mySQLAutoBenchmarking" # give unique name for your benchmarking. This will your CDK app name
+    export BENCHMARK_NAME="MySQLAutoBenchmarking" # give unique name for your benchmarking. This will your CDK app name
     export MYSQL_INST_TYPE="r5.8xlarge" # when not set, will use t3.medium as default value
     export MYSQL_VOL_SIZE=500 # when not set, will use 50 (GB) as default value
     export MYSQL_VOL_TYPE="io1" # when not set, will use gp3 as default value
@@ -24,14 +24,9 @@
     python3 -m venv .venv
     source .venv/bin/activate
     python3 -m pip install --upgrade pip
-    pip install -r requirements.txt
-    
-
-    virtualenv --python python3.7 venv
-    source venv/bin/activate
-    pip install -r requirements.txt
+    pip install -r requirements.txt    
     cdk bootstrap
-    cdk deploy $BENCHMARK_NAME
+    # cdk deploy $BENCHMARK_NAME
     ```
 
 1. Start SSM session to DBT2 instance.
