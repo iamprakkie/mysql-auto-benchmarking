@@ -76,14 +76,8 @@ for env in envs:
         'BENCHMARK_ENV_NAME': str(env['name'])
     }
 
-    # cdk_command = "cdk diff"
-    cdk_command = "cdk deploy --require-approval never"
+    cdk_command = "cdk synth"
+    # cdk_command = "cdk deploy --require-approval never"
 
-    process = subprocess.run(cdk_command, shell=True, env=env_vars, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    print(process.stdout.decode('utf-8'))
-    if process.returncode != 0:
-        print(f"\t{bcolors.FAIL}PROCESS RETURN CODE: ",process.returncode,{bcolors.ENDC})
-        exit("ERROR",process.returncode)
-
-
-
+    process = subprocess.Popen(cdk_command, shell=True, env=env_vars, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    print(process.stdout.read().decode('utf-8'))

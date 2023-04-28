@@ -71,14 +71,24 @@ class EC2InstanceStack(Stack):
         #get subnet ID           
         publicSubnetId = vpc.select_subnets(subnet_group_name="public").subnet_ids[0]
 
-        # AMI
-        amzn_linux = ec2.MachineImage.latest_amazon_linux(
-            generation=ec2.AmazonLinuxGeneration.AMAZON_LINUX_2,
-            edition=ec2.AmazonLinuxEdition.STANDARD,
-            virtualization=ec2.AmazonLinuxVirt.HVM,
-            storage=ec2.AmazonLinuxStorage.GENERAL_PURPOSE
-            )
-        
+        # Architecture based machine image selection
+        if ec2.InstanceType(instType).architecture == ec2.InstanceArchitecture.ARM_64:
+            amzn_linux = ec2.MachineImage.latest_amazon_linux(
+                generation=ec2.AmazonLinuxGeneration.AMAZON_LINUX_2,
+                edition=ec2.AmazonLinuxEdition.STANDARD,
+                virtualization=ec2.AmazonLinuxVirt.HVM,
+                cpu_type=ec2.AmazonLinuxCpuType.ARM_64,
+                storage=ec2.AmazonLinuxStorage.GENERAL_PURPOSE
+                )
+        else:
+            amzn_linux = ec2.MachineImage.latest_amazon_linux(
+                generation=ec2.AmazonLinuxGeneration.AMAZON_LINUX_2,
+                edition=ec2.AmazonLinuxEdition.STANDARD,
+                virtualization=ec2.AmazonLinuxVirt.HVM,
+                cpu_type=ec2.AmazonLinuxCpuType.X86_64,
+                storage=ec2.AmazonLinuxStorage.GENERAL_PURPOSE
+                )       
+            
         # Instance Role and SSM Managed Policy for MySQL instance
         cfnArn = "arn:aws:cloudformation:" + region + ":" + self.account + ":stack/" + mySQLAppName + "*"
 
@@ -176,10 +186,41 @@ class EC2InstanceStack(Stack):
             key_name=kp_mysql.key_name,
             block_devices=[
                 ec2.BlockDevice(device_name="/dev/xvda",volume=ec2.BlockDeviceVolume.ebs(100,delete_on_termination=True,volume_type=ec2.EbsDeviceVolumeType.GP3)),
-                ec2.BlockDevice(device_name="/dev/sda1",volume=ec2.BlockDeviceVolume.ebs(volSize,delete_on_termination=True,iops=volIOPS,volume_type=volType))
+                # ec2.BlockDevice(device_name="/dev/sda1",volume=ec2.BlockDeviceVolume.ebs(volSize,delete_on_termination=True,volume_type=volType))
             ],
             role = mySQLInstRole
             )
+        
+        if volType == ec2.EbsDeviceVolumeType.GP2:
+            mySQLInstance.instance.add_property_override("BlockDeviceMappings", [
+                {
+                    "DeviceName": "/dev/sda1",
+                    "Ebs": {
+                        "VolumeSize": volSize,
+                        "VolumeType": volType,
+                        "DeleteOnTermination": "true"
+                    }
+                }
+            ])
+        else:
+            mySQLInstance.instance.add_property_override("BlockDeviceMappings", [
+                {
+                    "DeviceName": "/dev/sda1",
+                    "Ebs": {
+                        "VolumeSize": volSize,
+                        "VolumeType": volType,
+                        "Iops": volIOPS,
+                        "DeleteOnTermination": "true"
+                    }
+                }
+            ])                
+
+        
+        # set IOPS only for volume types other than GP2
+        # sda1Volume = mySQLInstance.instance.block_device_mappings[1].ebs
+        # if sda1Volume.volume_type != ec2.EbsDeviceVolumeType.GP2:
+        #     sda1Volume.iops = volIOPS
+
 
         # ec2.Instance has no property of BlockDeviceMappings, add via lower layer cdk api:
         # mySQLInstance.instance.add_property_override("BlockDeviceMappings", [{
