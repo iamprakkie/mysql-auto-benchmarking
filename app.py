@@ -245,13 +245,16 @@ class EC2InstanceStack(Stack):
         s3_bucket.grant_read_write(mySQLInstance.role)
         s3_bucket.grant_read_write(dbt2Instance.role)
 
+        env_var_filename = envName.replace(' ', "-") + '.env_vars'
+        autobench_conf_filename = 'autobenchConf'
+        
         envDeployment = s3deploy.BucketDeployment(self, 'S3BucketDeployment'+mySQLAppName,
-            sources=[s3deploy.Source.asset(os.path.join(dirname))],
-            exclude=['**', '!envName.replace(' ', "-")+.env_vars'],
-            #os.path.join(dirname, envName.replace(' ', "-")+'.env_vars')
-            destination_bucket=s3_bucket,
-            access_control=s3.BucketAccessControl.PRIVATE,
-        )
+                sources=[s3deploy.Source.asset(os.path.join(dirname, 'env_vars'))],
+                exclude=['**'],
+                include=[env_var_filename],
+                destination_bucket=s3_bucket,
+                access_control=s3.BucketAccessControl.PRIVATE,
+            )        
 
         # mysqlRootkey = kms.Key(self, "MySQLRootKMS")
         # mysqlBenchmarkerkey = kms.Key(self, "MySQLBenchmarkerKMS")

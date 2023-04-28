@@ -49,7 +49,8 @@ for env in envs:
     print(f"\t{bcolors.OKORANGE}Benchmark name: {benchmarkName}{bcolors.ENDC}")
 
     # Create env export file for every environment
-    with open(os.path.join(os.path.dirname(__file__), env['name'].replace(' ', "-")+'.env_vars'), 'w') as fw:
+    os.makedirs(os.path.join(os.path.dirname(__file__), 'env_vars'), exist_ok=True)
+    with open(os.path.join(os.path.dirname(__file__), 'env_vars', env['name'].replace(' ', "-")+'.env_vars'), 'w') as fw:
         fw.write('export BENCHMARK_NAME=' + benchmarkName + '\n')
         fw.write('export BENCHMARK_REGION=' + env['region'] + '\n')
         fw.write('export MYSQL_INST_TYPE=' + env['instancetype'] + '\n')
@@ -75,14 +76,14 @@ for env in envs:
         'BENCHMARK_ENV_NAME': str(env['name'])
     }
 
-    # cdk_command = "cdk synth"
+    # cdk_command = "cdk diff"
     cdk_command = "cdk deploy --require-approval never"
 
-    process = subprocess.run(cdk_command, shell=True, env=env_vars, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-    print(f"\t{process.stdout.decode('utf-8')}{bcolors.ENDC}")
-    print(f"\t{process.stdin.decode('utf-8')}{bcolors.ENDC}")
-    if process.stderr:
-        print(f"\t{bcolors.FAIL}{process.stderr.decode('utf-8')}{bcolors.ENDC}")
+    process = subprocess.run(cdk_command, shell=True, env=env_vars, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    print(process.stdout.decode('utf-8'))
+    if process.returncode != 0:
+        print(f"\t{bcolors.FAIL}PROCESS RETURN CODE: ",process.returncode,{bcolors.ENDC})
+        exit("ERROR",process.returncode)
 
 
 
