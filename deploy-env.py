@@ -50,6 +50,7 @@ for env in envs:
 
     # Create env export file for every environment
     os.makedirs(os.path.join(os.path.dirname(__file__), 'env_files'), exist_ok=True)
+
     with open(os.path.join(os.path.dirname(__file__), 'env_files', env['name'].replace(' ', "-")+'.env_vars'), 'w') as fw:
         fw.write('export BENCHMARK_NAME=' + benchmarkName + '\n')
         fw.write('export BENCHMARK_REGION=' + env['region'] + '\n')
@@ -64,6 +65,9 @@ for env in envs:
     fw.close()
     print(f"\t{bcolors.OKORANGE}env_vars file: {fw.name}{bcolors.ENDC}")
 
+    # Copy autobench conf file to env_files folder
+    os.system('cp ' + os.path.join(os.path.dirname(__file__), env['autobenchconf']) + ' ' + os.path.join(os.path.dirname(__file__), 'env_files', env['name'].replace(' ', "-")+'-'+env['autobenchconf']))
+
     env_vars = {
         'PATH': os.environ['PATH'],
         'BENCHMARK_NAME': str(benchmarkName),
@@ -76,8 +80,8 @@ for env in envs:
         'BENCHMARK_ENV_NAME': str(env['name'])
     }
 
-    cdk_command = "cdk synth"
-    # cdk_command = "cdk deploy --require-approval never"
+    # cdk_command = "cdk diff"
+    cdk_command = "cdk deploy --require-approval never"
 
     process = subprocess.Popen(cdk_command, shell=True, env=env_vars, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     print(process.stdout.read().decode('utf-8'))

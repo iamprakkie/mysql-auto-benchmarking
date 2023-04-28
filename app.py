@@ -287,12 +287,12 @@ class EC2InstanceStack(Stack):
         s3_bucket.grant_read_write(dbt2Instance.role)
 
         env_var_filename = envName.replace(' ', "-") + '.env_vars'
-        autobench_conf_filename = 'autobenchConf'
+        autobench_conf_filename = envName.replace(' ', "-")+'-'+autobenchConf
         
         envDeployment = s3deploy.BucketDeployment(self, 'S3BucketDeployment'+mySQLAppName,
                 sources=[s3deploy.Source.asset(os.path.join(dirname, 'env_files'))],
                 exclude=['**'],
-                include=[env_var_filename],
+                include=[env_var_filename,autobench_conf_filename],
                 destination_bucket=s3_bucket,
                 access_control=s3.BucketAccessControl.PRIVATE,
             )        

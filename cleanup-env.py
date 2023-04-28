@@ -37,7 +37,7 @@ with open(os.path.join(os.path.dirname(__file__), configFileName), 'r') as f:
 envs = config['environments']
     
 for env in envs:
-    print(f"{bcolors.HEADER}Working on environment: {env['name']}{bcolors.ENDC}")
+    print(f"{bcolors.HEADER}Cleaning environment: {env['name']}{bcolors.ENDC}")
 
     # Read env_vars file
     env_var_filename = env['name'].replace(' ', "-") + '.env_vars'
@@ -56,6 +56,9 @@ for env in envs:
                 env_name, env_val = line.split('=')
                 existing_env[env_name]=env_val
     
+    print(f"\t{bcolors.OKORANGE}Benchmark name: {existing_env['BENCHMARK_NAME']}{bcolors.ENDC}")
+    print(f"\t{bcolors.OKORANGE}env_vars file: {os.path.join(os.path.dirname(__file__), 'env_files', env_var_filename)}{bcolors.ENDC}")
+
     env_vars = {
         'PATH': os.environ['PATH'],
         'BENCHMARK_NAME': existing_env['BENCHMARK_NAME'],
