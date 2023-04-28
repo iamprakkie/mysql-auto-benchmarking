@@ -36,7 +36,7 @@ with open(os.path.join(os.path.dirname(__file__), configFileName), 'r') as f:
 envs = config['environments']
     
 for env in envs:
-    print(f"{bcolors.OKBLUE}Working on environment: {env['name']}{bcolors.ENDC}")
+    print(f"{bcolors.HEADER}Working on environment: {env['name']}{bcolors.ENDC}")
     # set iops for gp2    
     volType = env['volumetype'] if not env['instancetype'].startswith('r5b') else 'io2'
     if volType == 'gp2':
@@ -49,8 +49,8 @@ for env in envs:
     print(f"\t{bcolors.OKORANGE}Benchmark name: {benchmarkName}{bcolors.ENDC}")
 
     # Create env export file for every environment
-    os.makedirs(os.path.join(os.path.dirname(__file__), 'env_vars'), exist_ok=True)
-    with open(os.path.join(os.path.dirname(__file__), 'env_vars', env['name'].replace(' ', "-")+'.env_vars'), 'w') as fw:
+    os.makedirs(os.path.join(os.path.dirname(__file__), 'env_files'), exist_ok=True)
+    with open(os.path.join(os.path.dirname(__file__), 'env_files', env['name'].replace(' ', "-")+'.env_vars'), 'w') as fw:
         fw.write('export BENCHMARK_NAME=' + benchmarkName + '\n')
         fw.write('export BENCHMARK_REGION=' + env['region'] + '\n')
         fw.write('export MYSQL_INST_TYPE=' + env['instancetype'] + '\n')

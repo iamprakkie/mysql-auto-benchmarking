@@ -290,7 +290,7 @@ class EC2InstanceStack(Stack):
         autobench_conf_filename = 'autobenchConf'
         
         envDeployment = s3deploy.BucketDeployment(self, 'S3BucketDeployment'+mySQLAppName,
-                sources=[s3deploy.Source.asset(os.path.join(dirname, 'env_vars'))],
+                sources=[s3deploy.Source.asset(os.path.join(dirname, 'env_files'))],
                 exclude=['**'],
                 include=[env_var_filename],
                 destination_bucket=s3_bucket,
