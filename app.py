@@ -1,5 +1,4 @@
 import os
-import boto3
 
 from constructs import Construct
 from aws_cdk.aws_s3_assets import Asset
@@ -30,7 +29,7 @@ class bcolors:
     UNDERLINE = '\033[4m'
     
 dirname = os.path.dirname(__file__)
-mySQLAppName = str(os.getenv("BENCHMARK_NAME", "MySQLAutoBenchmarking"))
+mySQLAppName = str(os.getenv("BENCHMARK_NAME", "mysqlautobenchmarking"))
 region = str(os.getenv("BENCHMARK_REGION",  "us-west-2"))
 instType = str(os.getenv("MYSQL_INST_TYPE", "t3.medium"))
 volSize = int(os.getenv("MYSQL_VOL_SIZE", 50))
@@ -246,16 +245,13 @@ class EC2InstanceStack(Stack):
         s3_bucket.grant_read_write(mySQLInstance.role)
         s3_bucket.grant_read_write(dbt2Instance.role)
 
-        # s3_client = boto3.client('s3')
-        # with open(os.path.join(dirname, envName.replace(' ', "-")+'.env_vars'),'rb') as fs3:
-        #     s3_client.upload_fileobj(fs3, mySQLAppName+'-artifacts', envName.replace(' ', "-")+'.env_vars')
-
-        # envDeployment = s3deploy.BucketDeployment(self, 'S3BucketDeployment'+mySQLAppName,
-        #     sources=[s3deploy.Source.asset(os.path.join(dirname),{exclude: ['**', '!onlyThisFile.txt'] })],
-        #     #os.path.join(dirname, envName.replace(' ', "-")+'.env_vars')
-        #     destination_bucket=s3_bucket,
-        #     access_control=s3.BucketAccessControl.PRIVATE,
-        # )
+        envDeployment = s3deploy.BucketDeployment(self, 'S3BucketDeployment'+mySQLAppName,
+            sources=[s3deploy.Source.asset(os.path.join(dirname))],
+            exclude=['**', '!envName.replace(' ', "-")+.env_vars'],
+            #os.path.join(dirname, envName.replace(' ', "-")+'.env_vars')
+            destination_bucket=s3_bucket,
+            access_control=s3.BucketAccessControl.PRIVATE,
+        )
 
         # mysqlRootkey = kms.Key(self, "MySQLRootKMS")
         # mysqlBenchmarkerkey = kms.Key(self, "MySQLBenchmarkerKMS")

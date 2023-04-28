@@ -1,11 +1,5 @@
 # Configure required environment values for benchmarking
 environments:
-  - name: "r5.8xlarge gp2 Environment" # Give unique name here
-    region: "us-west-2"
-    instancetype: "r5.8xlarge" # EC2 instance type. If r5b instance is set here, volume type defaults to io2 block express irrespective of configuration mentioned here.
-    volumetype: "gp2" # EBS volume type
-    volumesize: 500 # Size in GB
-    autobenchconf: "fine-tuned-sysbench-autobench.conf" #autobench.conf file name. This file should be in the current directory
   - name: "r5.8xlarge gp3 Environment"
     region: "us-west-2"
     instancetype: "r5.8xlarge"
@@ -20,43 +14,3 @@ environments:
     volumesize: 500
     iops: 3000
     autobenchconf: "fine-tuned-sysbench-autobench.conf"
-  - name: "r5.8xlarge io2 Environment"
-    region: "us-west-2"  
-    instancetype: "r5.8xlarge"
-    volumetype: "io2"
-    volumesize: 500
-    iops: 3000
-    autobenchconf: "fine-tuned-sysbench-autobench.conf"
-  - name: "r7g.8xlarge gp2 Environment"
-    region: "us-west-2"  
-    instancetype: "r7g.8xlarge"
-    volumetype: "gp2"
-    volumesize: 500
-    autobenchconf: "fine-tuned-sysbench-autobench.conf"    
-  - name: "r7g.8xlarge gp3 Environment"
-    region: "us-west-2"  
-    instancetype: "r7g.8xlarge"
-    volumetype: "gp3"
-    volumesize: 500
-    iops: 3000
-    autobenchconf: "fine-tuned-sysbench-autobench.conf"
-  - name: "r7g.8xlarge io1 Environment"
-    region: "us-west-2"  
-    instancetype: "r7g.8xlarge"
-    volumetype: "io1"
-    volumesize: 500
-    iops: 3000
-    autobenchconf: "fine-tuned-sysbench-autobench.conf"
-  - name: "r7g.8xlarge io2 Environment"
-    region: "us-west-2"  
-    instancetype: "r7g.8xlarge"
-    volumetype: "io2"
-    volumesize: 500
-    iops: 3000
-    autobenchconf: "fine-tuned-sysbench-autobench.conf"
-  - name: "r5b.8xlarge io2 block express Environment"
-    region: "us-west-2" # note that r5b instances are not available in us-east-1 yet  
-    instancetype: "r5b.8xlarge"
-    volumesize: 500
-    iops: 3000
-    autobenchconf: "fine-tuned-sysbench-autobench.conf"    

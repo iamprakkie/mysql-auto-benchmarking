@@ -57,7 +57,7 @@ for env in envs:
         fw.write('export MYSQL_VOL_IOPS=' + iops + '\n')
         fw.write('export MYSQL_VOL_TYPE=' + volType + '\n')
         fw.write('export MYSQL_AUTOBENCH_CONF=' + env['autobenchconf'] + '\n')
-        fw.write('export BENCHMARK_ENV_NAME=' + env['name'] + '\n')
+        fw.write('export BENCHMARK_ENV_NAME="' + env['name'] + '"\n')
     
     # Close the file
     fw.close()
@@ -75,14 +75,12 @@ for env in envs:
         'BENCHMARK_ENV_NAME': str(env['name'])
     }
 
-    # cdk_command = ['/home/ec2-user/dev/mysql-auto-benchmarking-multi-env-branch/mysql-auto-benchmarking/venv/bin/cdk', 'synth']
-    # cdk_command = ['./venv/bin/cdk', 'deploy', '--require-approval=never']
-    # cdk_command = ['env']
-    # cdk_command = [ 'which', 'cdk',';','env' ]
-    cdk_command = "cdk synth"
+    # cdk_command = "cdk synth"
+    cdk_command = "cdk deploy --require-approval never"
 
-    process = subprocess.run(cdk_command, shell=True, env=env_vars, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process = subprocess.run(cdk_command, shell=True, env=env_vars, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
     print(f"\t{process.stdout.decode('utf-8')}{bcolors.ENDC}")
+    print(f"\t{process.stdin.decode('utf-8')}{bcolors.ENDC}")
     if process.stderr:
         print(f"\t{bcolors.FAIL}{process.stderr.decode('utf-8')}{bcolors.ENDC}")
 
