@@ -1,13 +1,10 @@
 #!/bin/python3
 
-# This script is used to create env_vars files for every environment in the config file.
-# The env_vars files are used to run the benchmarks.
+# This script is used to clean up environments created using deploy-env.py
 
 import yaml
 import os
-import uuid
 import subprocess
-import sys
 
 class bcolors:
     HEADER = '\033[95m'
@@ -76,3 +73,4 @@ for env in envs:
     process = subprocess.Popen(cdk_command, shell=True, env=env_vars, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     print(process.stdout.read().decode('utf-8'))
     print(f"{bcolors.OKGREEN}{env['name']} cleaned up.{bcolors.ENDC}")
+    print('-'*100)

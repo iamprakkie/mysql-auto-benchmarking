@@ -213,33 +213,7 @@ class EC2InstanceStack(Stack):
                         "DeleteOnTermination": "true"
                     }
                 }
-            ])                
-
-        
-        # set IOPS only for volume types other than GP2
-        # sda1Volume = mySQLInstance.instance.block_device_mappings[1].ebs
-        # if sda1Volume.volume_type != ec2.EbsDeviceVolumeType.GP2:
-        #     sda1Volume.iops = volIOPS
-
-
-        # ec2.Instance has no property of BlockDeviceMappings, add via lower layer cdk api:
-        # mySQLInstance.instance.add_property_override("BlockDeviceMappings", [{
-        #     "DeviceName": "/dev/xvda",
-        #     "Ebs": {
-        #         "VolumeSize": "30",
-        #         "VolumeType": "gp3",
-        #         "DeleteOnTermination": "true"
-        #     }
-        # }, {
-        #     "DeviceName": "/dev/sda1",
-        #     "Ebs": {
-        #         "VolumeSize": "50",
-        #         "VolumeType": "io1",
-        #         "Iops": "150",
-        #         "DeleteOnTermination": "true"
-        #     }
-        # }
-        # ])
+            ])
 
         # Script in S3 as Asset
         asset = Asset(self, "mySQLAsset", path=os.path.join(dirname, "user-data-mysql-instance.sh"))

@@ -80,8 +80,10 @@ for env in envs:
         'BENCHMARK_ENV_NAME': str(env['name'])
     }
 
+    print(f"\t{bcolors.OKORANGE}CDK Deployment in progress...{bcolors.ENDC}")
     # cdk_command = "cdk diff"
     cdk_command = "cdk deploy --require-approval never"
 
     process = subprocess.Popen(cdk_command, shell=True, env=env_vars, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     print(process.stdout.read().decode('utf-8'))
+    print('-'*100)
