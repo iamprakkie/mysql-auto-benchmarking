@@ -72,7 +72,7 @@ for env in envs:
 
 
     # send command to DBT2 instance to initialize sysbench
-    ssm_command = "pwd"
+    ssm_command = "su ssm-user --shell bash -c 'whoami'"
     ssm = boto3.client('ssm')
     reponse = ssm.send_command(
             InstanceIds=[dbt2InstId],
