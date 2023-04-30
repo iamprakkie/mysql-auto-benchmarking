@@ -16,7 +16,6 @@ rpm --import https://repo.mysql.com/RPM-GPG-KEY-mysql-2022
 yum install git tree jq -y
 yum install mysql-community-client -y
 
-
 #for dbt2
 yum install numactl -y
 
@@ -30,9 +29,21 @@ MYINSTID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
 #retrieve benchmark name from instance tag
 BENCHMARK_NAME=$(aws ec2 describe-instances --region $MYREGION --instance-ids $MYINSTID --query "Reservations[*].Instances[*].Tags[?Key=='aws:cloudformation:stack-name'].Value" --output text)
 
+# aws cli v2
+INST_ARCH=$(aws cloudformation describe-stacks --region $MYREGION --stack-name $BENCHMARK_NAME --query "Stacks[][].Outputs[?OutputKey=='instArch'].OutputValue" --output text)
+
+if [ $INST_ARCH == "x86_64" ]; then
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+    unzip awscliv2.zip
+    sudo ./aws/install
+else
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
+    unzip awscliv2.zip
+    sudo ./aws/install
+
 # get instance private IPs
 MYSQLINST=$(aws cloudformation describe-stacks --region $MYREGION --stack-name $BENCHMARK_NAME --query "Stacks[][].Outputs[?OutputKey=='mySQLPrivIP'].OutputValue" --output text)
-MYDBT2INST=$(aws cloudformation describe-stacks --region $MYREGION --stack-name $BENCHMARK_NAME --query "Stacks[][].Outputs[?OutputKey=='dbt2PrivIP'].OutputValue" --output text)
+MYDBT2INST=$(aws cloudformation describe-stacks --region $MYREGION --stack-name $BENCHMARK_NAME --query "Stacks[][].Outputs[?OutputKey=='dbt2PrivIP'].OutputValue" --output text)    
 
 # create ssm-user
 adduser -U -m ssm-user
@@ -56,10 +67,11 @@ chmod 700 /home/ssm-user/.ssh
 echo "alias ll='ls -larth'" > /etc/profile.d/user-alias.sh
 
 # create custom envs
-echo "export USER=ssm-user" > /etc/profile.d/custom-envs.sh
+echo "export BENCHMARK_NAME=$BENCHMARK_NAME" > /etc/profile.d/custom-envs.sh
+echo "export INST_ARCH=$INST_ARCH" >> /etc/profile.d/custom-envs.sh
 echo "export MYSQLINST=$MYSQLINST" >> /etc/profile.d/custom-envs.sh
 echo "export MYDBT2INST=$MYDBT2INST" >> /etc/profile.d/custom-envs.sh
-echo "export BENCHMARK_NAME=$BENCHMARK_NAME" >> /etc/profile.d/custom-envs.sh
+echo "export USER=ssm-user" >> /etc/profile.d/custom-envs.sh
 
 #create required dirs
 mkdir -p /home/ssm-user/bench /home/ssm-user/bench/mysql # benchmarking dir
@@ -69,7 +81,10 @@ mkdir -p /mysql-data/mysql-data-dir # MySQL data directory. This is the location
 ln -s /mysql-data/mysql-data-dir /home/ssm-user/bench/mysql-data-dir
 
 # change ownership
-chown -R ssm-user:ssm-user /mysql-data/mysql-data-dir /home/ssm-user/bench
+chown -R ssm-user:ssm-user /home/ssm-user/bench
+
+#clone repo
+git clone https://github.com/iamprakkie/mysql-auto-benchmarking.git /home/ssm-user/mysql-auto-benchmarking
 
 
 # Enable RPS

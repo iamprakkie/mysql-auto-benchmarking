@@ -72,7 +72,8 @@ for env in envs:
 
 
     # send command to DBT2 instance to initialize sysbench
-    ssm_command = "su ssm-user --shell bash -c 'whoami; ls -larth $HOME'"
+    ssm_command = "su ssm-user --shell bash -c 'whoami; aws --version'"
+
     ssm = boto3.client('ssm')
     reponse = ssm.send_command(
             InstanceIds=[dbt2InstId],
@@ -89,8 +90,6 @@ for env in envs:
         )
     except WaiterError as err:
         print(err)
-    
-
 
     command_output = ssm.get_command_invocation(
             CommandId=command_id,InstanceId=dbt2InstId)

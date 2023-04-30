@@ -286,6 +286,7 @@ class EC2InstanceStack(Stack):
         CfnOutput(self, "mySQLPrivIP", value=mySQLInstance.instance_private_ip, export_name='ExportedMySQLPrivIP'+mySQLAppName)
         CfnOutput(self, "dbt2InstId", value=dbt2Instance.instance_id, export_name='ExportedDBT2InstId'+mySQLAppName)
         CfnOutput(self, "dbt2PrivIP", value=dbt2Instance.instance_private_ip, export_name='ExportedDBT2PrivIP'+mySQLAppName)
+        CfnOutput(self, "instArch", value=ec2.InstanceType(instType).architecture.value, export_name='ExportedInstArch'+mySQLAppName)
         # CfnOutput(self, "mysqlRootSecret", value=mysql_root_secret.secret_name, export_name='ExportedMySQLRootSecret'+mySQLAppName)
         # CfnOutput(self, "mysqlBenchmarkerSecret", value=mysql_benchmarker_secret.secret_name, export_name='ExportedMySQLBenchmarkerSecret'+mySQLAppName)
         CfnOutput(self,"mysqlRegion",value=region, export_name='ExportedMySQLRegion'+mySQLAppName)
