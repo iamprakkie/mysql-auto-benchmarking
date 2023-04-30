@@ -80,6 +80,9 @@ mkdir -p /mysql-data/mysql-data-dir # MySQL data directory. This is the location
 # create soft link
 ln -s /mysql-data/mysql-data-dir /home/ssm-user/bench/mysql-data-dir
 
+# Download env-file from S3 bucket
+# aws s3 cp --region $MYREGION s3://${BENCHMARK_NAME}-artifacts/ /home/ssm-user/bench/env-files/ --recursive
+
 # change ownership
 chown -R ssm-user:ssm-user /home/ssm-user/bench
 

@@ -89,6 +89,9 @@ mkdir -p /home/ssm-user/bench /home/ssm-user/bench/mysql # benchmarking dir. Ens
 mkdir -p /home/ssm-user/bench/tarballs # Location where tar.gz of MySQL, DBT2 and Sysbench will be placed. Ensure autobench.conf and setup_dbt2.sh reflects this configuration.
 mkdir -p /home/ssm-user/bench/sysbench # sysbench dir. This is also default-directory. Ensure autobench.conf reflects this configuration.
 
+# Download env-file from S3 bucket
+aws s3 cp --region $MYREGION s3://${BENCHMARK_NAME}-artifacts/ /home/ssm-user/bench/env-files/ --recursive
+
 # change ownership
 chown -R ssm-user:ssm-user /home/ssm-user/bench
 
@@ -99,7 +102,6 @@ git clone https://github.com/iamprakkie/mysql-auto-benchmarking.git /home/ssm-us
 chown -R ssm-user:ssm-user /home/ssm-user/mysql-auto-benchmarking
 
 # Enable RPS
-
 sudo sh -c 'for x in /sys/class/net/eth0/queues/rx-*; do echo ffffffff > $x/rps_cpus; done' 
 sudo sh -c "echo 4096 > /sys/class/net/eth0/queues/rx-0/rps_flow_cnt"
 
