@@ -81,9 +81,12 @@ for env in envs:
     }
 
     print(f"\t{bcolors.OKORANGE}CDK Deployment in progress...{bcolors.ENDC}")
-    # cdk_command = "cdk diff"
-    cdk_command = "cdk deploy --require-approval never"
+    # cdk_command = "cdk synth --color=always 2>&1 | grep -v -E '(Successfully synthesized)|(Supply a stack id)' 1>&2"
+    cdk_command = "cdk deploy --require-approval never --color=always"
 
+
+    # Issue with stdout for cdk: https://github.com/aws/aws-cdk/issues/5552
     process = subprocess.Popen(cdk_command, shell=True, env=env_vars, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     print(process.stdout.read().decode('utf-8'))
+    #print(process.stderr.read().decode('utf-8'))
     print('-'*100)
