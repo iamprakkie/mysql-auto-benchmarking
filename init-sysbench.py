@@ -22,6 +22,42 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
+def run_ssm_command(ssm_command):
+    ssm = boto3.client('ssm')
+    reponse = ssm.send_command(
+            InstanceIds=[dbt2InstId],
+            DocumentName='AWS-RunShellScript',
+            Parameters={"commands": [ssm_command]},
+            CloudWatchOutputConfig={
+                'CloudWatchOutputEnabled': True
+                }
+        )
+
+    command_id = reponse['Command']['CommandId']
+
+    waiter = ssm.get_waiter("command_executed")
+    try:
+        waiter.wait(
+            CommandId=command_id,
+            InstanceId=dbt2InstId,
+        )
+    except WaiterError as err:
+        print(err)
+
+    command_output = ssm.get_command_invocation(
+            CommandId=command_id,InstanceId=dbt2InstId)
+
+    print()
+    print(f"\t{bcolors.OKCYAN}CommandId: {command_output['CommandId']}{bcolors.ENDC}")
+    print(f"\t{bcolors.OKCYAN}InstanceId: {command_output['InstanceId']}{bcolors.ENDC}")
+    print(f"\t{bcolors.BOLD}Status: {command_output['Status']}{bcolors.ENDC}")
+
+    print(f"\t{bcolors.OKWHITE2}StandardOutputContent: {command_output['StandardOutputContent']}{bcolors.ENDC}")
+    
+    if command_output['StandardErrorContent'] and not command_output['Status'] == 'Success':
+        print(f"\t{bcolors.FAIL}StandardErrorContent: {command_output['StandardErrorContent']}{bcolors.ENDC}")
+    print('-'*100)    
+
 # Get config file name as command line argument
 if len(os.sys.argv) > 1:
     configFileName = os.sys.argv[1]
@@ -35,7 +71,7 @@ with open(os.path.join(os.path.dirname(__file__), configFileName), 'r') as f:
 envs = config['environments']
     
 for env in envs:
-    print(f"{bcolors.HEADER}Intializing sysbench on environment: {env['name']}{bcolors.ENDC}")
+    print(f"{bcolors.HEADER}WORKING ON ENVIRONMENT: {env['name']}{bcolors.ENDC}")
 
     # Read env_vars file
     env_var_filename = env['name'].replace(' ', "-") + '.env_vars'
@@ -74,45 +110,14 @@ for env in envs:
             dbt2InstId = output['OutputValue']
 
 
-    # send command to DBT2 instance to initialize sysbench
-    # ssm_command = "su ssm-user --shell bash -c 'whoami; aws --version'"
+    # send command to DBT2 instance to setup sysbench
+    print(f"\n{bcolors.OKBLUE}Setting up DBT2 instance: {dbt2InstId} for sysbench{bcolors.ENDC}")
     ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env-files/"+env_var_filename+"; cd /home/ssm-user/mysql-auto-benchmarking; bash ./setup-dbt2-instance-for-sysbench.sh'"
+    run_ssm_command(ssm_command)
 
-    ssm = boto3.client('ssm')
-    reponse = ssm.send_command(
-            InstanceIds=[dbt2InstId],
-            DocumentName='AWS-RunShellScript',
-            Parameters={"commands": [ssm_command]},
-            CloudWatchOutputConfig={
-                'CloudWatchOutputEnabled': True
-                }
-        )
+    # send command to DBT2 instance to setup sysbench
+    print(f"\n{bcolors.OKBLUE}Initialzing sysbench...{bcolors.ENDC}")
+    ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env-files/"+env_var_filename+"; cd /home/ssm-user/mysql-auto-benchmarking; bash ./init-sysbench.sh'"
+    run_ssm_command(ssm_command)
 
-    command_id = reponse['Command']['CommandId']
-
-    waiter = ssm.get_waiter("command_executed")
-    try:
-        waiter.wait(
-            CommandId=command_id,
-            InstanceId=dbt2InstId,
-        )
-    except WaiterError as err:
-        print(err)
-
-    command_output = ssm.get_command_invocation(
-            CommandId=command_id,InstanceId=dbt2InstId)
-
-    print()
-    print(f"\t{bcolors.OKCYAN}CommandId: {command_output['CommandId']}{bcolors.ENDC}")
-    print(f"\t{bcolors.OKCYAN}InstanceId: {command_output['InstanceId']}{bcolors.ENDC}")
-    print(f"\t{bcolors.BOLD}Status: {command_output['Status']}{bcolors.ENDC}")
-
-    print(f"\t{bcolors.OKWHITE2}StandardOutputContent: {command_output['StandardOutputContent']}{bcolors.ENDC}")
-    
-    if command_output['StandardErrorContent'] and not command_output['Status'] == 'Success':
-        print(f"\t{bcolors.FAIL}StandardErrorContent: {command_output['StandardErrorContent']}{bcolors.ENDC}")
-    print('-'*100)
-
-    # process = subprocess.Popen(cdk_command, shell=True, env=env_vars, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    # print(process.stdout.read().decode('utf-8'))
-    # print(f"{bcolors.OKGREEN}{env['name']} cleaned up.{bcolors.ENDC}")
+print(f"\n{bcolors.OKGREEN}INITIALIZATION COMPLETE!!{bcolors.ENDC}")
