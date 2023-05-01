@@ -108,7 +108,7 @@ ln -s /mysql-data/mysql-data-dir /home/ssm-user/bench/mysql-data-dir
 chown -R ssm-user:ssm-user /home/ssm-user/bench
 
 #clone repo
-git clone https://github.com/iamprakkie/mysql-auto-benchmarking.git /home/ssm-user/mysql-auto-benchmarking
+git clone -b multi-env https://github.com/iamprakkie/mysql-auto-benchmarking.git /home/ssm-user/mysql-auto-benchmarking
 
 echo "cloned repo"
 
