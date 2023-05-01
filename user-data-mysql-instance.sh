@@ -19,12 +19,15 @@ yum install mysql-community-client -y
 #for dbt2
 yum install numactl -y
 
+#get token for IMDSv2
+TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+
 # get region
-MYREGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/region)
+MYREGION=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/placement/region)
 aws configure set region $MYREGION
 
 # get instance id
-MYINSTID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+MYINSTID=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/instance-id)
 
 #retrieve benchmark name from instance tag
 BENCHMARK_NAME=$(aws ec2 describe-instances --region $MYREGION --instance-ids $MYINSTID --query "Reservations[*].Instances[*].Tags[?Key=='aws:cloudformation:stack-name'].Value" --output text)
@@ -40,6 +43,7 @@ else
     curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
     unzip awscliv2.zip
     sudo ./aws/install
+fi
 
 # get instance private IPs
 MYSQLINST=$(aws cloudformation describe-stacks --region $MYREGION --stack-name $BENCHMARK_NAME --query "Stacks[][].Outputs[?OutputKey=='mySQLPrivIP'].OutputValue" --output text)
