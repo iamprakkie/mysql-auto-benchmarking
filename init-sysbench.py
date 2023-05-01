@@ -4,7 +4,6 @@
 
 import yaml
 import os
-import subprocess
 import boto3
 from botocore.exceptions import WaiterError
 

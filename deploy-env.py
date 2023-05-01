@@ -80,7 +80,7 @@ for env in envs:
         'BENCHMARK_ENV_NAME': str(env['name'])
     }
 
-    print(f"\t{bcolors.OKORANGE}CDK Deployment in progress...{bcolors.ENDC}")
+    print(f"\t{bcolors.OKORANGE}CDK deployment in progress...{bcolors.ENDC}")
     # cdk_command = "cdk synth --color=always 2>&1 | grep -v -E '(Successfully synthesized)|(Supply a stack id)' 1>&2"
     cdk_command = "cdk deploy --require-approval never --color=always"
 
