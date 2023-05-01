@@ -76,7 +76,7 @@ for env in envs:
 
     # send command to DBT2 instance to initialize sysbench
     # ssm_command = "su ssm-user --shell bash -c 'whoami; aws --version'"
-    ssm_command = "su ssm-user --shell bash -c 'source /home/ssm-user/bench/env-files/"+env_var_filename+"; cd /home/ssm-user/mysql-auto-benchmarking; bash ./setup-dbt2-instance-for-sysbench.sh'"
+    ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env-files/"+env_var_filename+"; cd /home/ssm-user/mysql-auto-benchmarking; bash ./setup-dbt2-instance-for-sysbench.sh'"
 
     ssm = boto3.client('ssm')
     reponse = ssm.send_command(
@@ -106,8 +106,10 @@ for env in envs:
     print(f"\t{bcolors.OKCYAN}CommandId: {command_output['CommandId']}{bcolors.ENDC}")
     print(f"\t{bcolors.OKCYAN}InstanceId: {command_output['InstanceId']}{bcolors.ENDC}")
     print(f"\t{bcolors.BOLD}Status: {command_output['Status']}{bcolors.ENDC}")
+
     print(f"\t{bcolors.OKWHITE2}StandardOutputContent: {command_output['StandardOutputContent']}{bcolors.ENDC}")
-    if command_output['StandardErrorContent']:
+    
+    if command_output['StandardErrorContent'] and not command_output['Status'] == 'Success':
         print(f"\t{bcolors.FAIL}StandardErrorContent: {command_output['StandardErrorContent']}{bcolors.ENDC}")
     print('-'*100)
 
