@@ -5,7 +5,10 @@ set -e
 
 source ./format_display.sh
 
-CURRINST=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
+#get token for IMDSv2
+TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+
+CURRINST=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/local-ipv4)
 
 if [[ $CURRINST != $MYDBT2INST ]]; then
     log 'R' "This script need to be run only in DBT2 Instance ($MYDBT2INST)."
@@ -33,6 +36,7 @@ tar xfz /home/ssm-user/bench/tarballs/dbt2-0.37.50.16.tar.gz -C /home/ssm-user/b
 
 #copy required files
 cp /home/ssm-user/bench/tarballs/dbt2-0.37.50.16/scripts/bench_run.sh /home/ssm-user/bench/
-cp /home/ssm-user/mysql-auto-benchmarking/sysbench-autobench.conf /home/ssm-user/bench/sysbench/autobench.conf
+#cp /home/ssm-user/mysql-auto-benchmarking/sysbench-autobench.conf /home/ssm-user/bench/sysbench/autobench.conf
+cp /home/ssm-user/bench/env-files/`basename $BENCHMARK_ENV_FILENAME .env_vars`"-"${MYSQL_AUTOBENCH_CONF} /home/ssm-user/bench/sysbench/autobench.conf
 
 log 'G' "DBT2 setup COMPLETE. Verify values in /home/ssm-user/bench/sysbench/autobench.conf"

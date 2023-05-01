@@ -37,6 +37,7 @@ envs = config['environments']
     
 for env in envs:
     print(f"{bcolors.HEADER}Working on environment: {env['name']}{bcolors.ENDC}")
+
     # set iops for gp2    
     volType = env['volumetype'] if not env['instancetype'].startswith('r5b') else 'io2'
     if volType == 'gp2':
@@ -51,7 +52,12 @@ for env in envs:
     # Create env export file for every environment
     os.makedirs(os.path.join(os.path.dirname(__file__), 'env_files'), exist_ok=True)
 
-    with open(os.path.join(os.path.dirname(__file__), 'env_files', env['name'].replace(' ', "-")+'.env_vars'), 'w') as fw:
+    env_var_filename = env['name'].replace(' ', "-") + '.env_vars'
+    env_var_filename = env_var_filename.lower()
+    autobench_conf_filename = env['name'].replace(' ', "-")+'-'+env['autobenchconf']
+    autobench_conf_filename = autobench_conf_filename.lower()
+
+    with open(os.path.join(os.path.dirname(__file__), 'env_files', env_var_filename), 'w') as fw:
         fw.write('export BENCHMARK_NAME=' + benchmarkName + '\n')
         fw.write('export BENCHMARK_REGION=' + env['region'] + '\n')
         fw.write('export MYSQL_INST_TYPE=' + env['instancetype'] + '\n')
@@ -60,13 +66,14 @@ for env in envs:
         fw.write('export MYSQL_VOL_TYPE=' + volType + '\n')
         fw.write('export MYSQL_AUTOBENCH_CONF=' + env['autobenchconf'] + '\n')
         fw.write('export BENCHMARK_ENV_NAME="' + env['name'] + '"\n')
+        fw.write('export BENCHMARK_ENV_FILENAME=' + env_var_filename + '\n')
     
     # Close the file
     fw.close()
     print(f"\t{bcolors.OKORANGE}env_vars file: {fw.name}{bcolors.ENDC}")
 
     # Copy autobench conf file to env_files folder
-    os.system('cp ' + os.path.join(os.path.dirname(__file__), env['autobenchconf']) + ' ' + os.path.join(os.path.dirname(__file__), 'env_files', env['name'].replace(' ', "-")+'-'+env['autobenchconf']))
+    os.system('cp ' + os.path.join(os.path.dirname(__file__), env['autobenchconf']) + ' ' + os.path.join(os.path.dirname(__file__), 'env_files', autobench_conf_filename))
 
     env_vars = {
         'PATH': os.environ['PATH'],
@@ -77,7 +84,8 @@ for env in envs:
         'MYSQL_VOL_IOPS': iops,
         'MYSQL_VOL_TYPE': volType,
         'MYSQL_AUTOBENCH_CONF': str(env['autobenchconf']),
-        'BENCHMARK_ENV_NAME': str(env['name'])
+        'BENCHMARK_ENV_NAME': str(env['name']),
+        'BENCHMARK_ENV_FILENAME': str(env_var_filename)
     }
 
     print(f"\t{bcolors.OKORANGE}CDK deployment in progress...{bcolors.ENDC}")

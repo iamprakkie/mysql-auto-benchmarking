@@ -115,6 +115,15 @@ class EC2InstanceStack(Stack):
                     }
                     )
                 ]))
+        mySQLInstRole.attach_inline_policy(
+            iam.Policy(self, 'mySQLInstLogsPolicy',
+                    statements = [
+                    iam.PolicyStatement(
+                    effect = iam.Effect.ALLOW,
+                    actions = ['logs:CreateLogGroup', 'logs:CreateLogStream', 'logs:PutLogEvents'],
+                    resources = ["arn:aws:logs:" + region + ":" + self.account + ":log-group:*"]
+                    )
+                ]))
 
         # Instance Role and SSM Managed Policy for DBT2 instance
         dbt2InstRole = iam.Role(self, "DBT2InstanceSSM", assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"))
@@ -139,6 +148,15 @@ class EC2InstanceStack(Stack):
                     }
                     )
                 ]))
+        dbt2InstRole.attach_inline_policy(
+            iam.Policy(self, 'dbt2InstLogsPolicy',
+                    statements = [
+                    iam.PolicyStatement(
+                    effect = iam.Effect.ALLOW,
+                    actions = ['logs:CreateLogGroup', 'logs:CreateLogStream', 'logs:PutLogEvents'],
+                    resources = ["arn:aws:logs:" + region + ":" + self.account + ":log-group:*"]
+                    )
+                ]))        
 
         #Security Group for DBT2 instance
         sg_dbt2 = ec2.SecurityGroup(
@@ -261,7 +279,9 @@ class EC2InstanceStack(Stack):
         s3_bucket.grant_read_write(dbt2Instance.role)
 
         env_var_filename = envName.replace(' ', "-") + '.env_vars'
+        env_var_filename = env_var_filename.lower()
         autobench_conf_filename = envName.replace(' ', "-")+'-'+autobenchConf
+        autobench_conf_filename = autobench_conf_filename.lower()
         
         envDeployment = s3deploy.BucketDeployment(self, 'S3BucketDeployment'+mySQLAppName,
                 sources=[s3deploy.Source.asset(os.path.join(dirname, 'env_files'))],

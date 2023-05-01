@@ -39,6 +39,10 @@ for env in envs:
 
     # Read env_vars file
     env_var_filename = env['name'].replace(' ', "-") + '.env_vars'
+    env_var_filename = env_var_filename.lower()
+    autobench_conf_filename = env['name'].replace(' ', "-")+'-'+env['autobenchconf']
+    autobench_conf_filename = autobench_conf_filename.lower()
+
 
     # dictionary for existing env
     existing_env={}
@@ -56,7 +60,7 @@ for env in envs:
     
     print(f"\t{bcolors.OKORANGE}Benchmark name: {existing_env['BENCHMARK_NAME']}{bcolors.ENDC}")
     print(f"\t{bcolors.OKORANGE}env_vars file: {os.path.join(os.path.dirname(__file__), 'env_files', env_var_filename)}{bcolors.ENDC}")
-    print(f"\t{bcolors.OKORANGE}autobench conf file: {os.path.join(os.path.dirname(__file__), 'env_files',  existing_env['MYSQL_AUTOBENCH_CONF'])}{bcolors.ENDC}")
+    print(f"\t{bcolors.OKORANGE}autobench conf file: {os.path.join(os.path.dirname(__file__), 'env_files',  autobench_conf_filename)}{bcolors.ENDC}")
 
     # get DBT2 instance ID from a cloudformation stack
     cfn = boto3.client('cloudformation')
@@ -71,13 +75,18 @@ for env in envs:
 
 
     # send command to DBT2 instance to initialize sysbench
-    ssm_command = "su ssm-user --shell bash -c 'whoami; aws --version'"
+    # ssm_command = "su ssm-user --shell bash -c 'whoami; aws --version'"
+    ssm_command = "su ssm-user --shell bash -c 'source /home/ssm-user/bench/env-files/"+env_var_filename+"; cd /home/ssm-user/mysql-auto-benchmarking; bash ./setup-dbt2-instance-for-sysbench.sh'"
 
     ssm = boto3.client('ssm')
     reponse = ssm.send_command(
             InstanceIds=[dbt2InstId],
             DocumentName='AWS-RunShellScript',
-            Parameters={"commands": [ssm_command]},)
+            Parameters={"commands": [ssm_command]},
+            CloudWatchOutputConfig={
+                'CloudWatchOutputEnabled': True
+                }
+        )
 
     command_id = reponse['Command']['CommandId']
 

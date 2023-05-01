@@ -35,9 +35,10 @@ envs = config['environments']
     
 for env in envs:
     print(f"{bcolors.HEADER}Cleaning environment: {env['name']}{bcolors.ENDC}")
-
+    
     # Read env_vars file
     env_var_filename = env['name'].replace(' ', "-") + '.env_vars'
+    env_var_filename = env_var_filename.lower()
 
     # dictionary for existing env
     existing_env={}
