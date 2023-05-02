@@ -22,16 +22,19 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-def run_ssm_command(ssm_command):
+def run_ssm_command(ssm_command,comment):
     ssm = boto3.client('ssm')
     reponse = ssm.send_command(
             InstanceIds=[dbt2InstId],
             DocumentName='AWS-RunShellScript',
-            Parameters={"commands": [ssm_command]},
+            Parameters={"commands": [ssm_command], 'executionTimeout':['172800']},
             CloudWatchOutputConfig={
                 'CloudWatchOutputEnabled': True
                 },
-            TimeoutSeconds=172800
+            TimeoutSeconds=172800,
+            MaxConcurrency='50',
+            MaxErrors='0',
+            Comment=comment,
         )
 
     command_id = reponse['Command']['CommandId']
@@ -74,9 +77,14 @@ with open(os.path.join(os.path.dirname(__file__), configFileName), 'r') as f:
     config = yaml.load(f, Loader=yaml.Loader)
 
 envs = config['environments']
-    
+
+# List of DB2 Instances to be benchmarked
+dbt2InstIds=[]
+
+print(f"{bcolors.HEADER}Autobenchmarking Environments using sysbench as configured in {configFileName}{bcolors.ENDC}")
+
 for env in envs:
-    print(f"{bcolors.HEADER}WORKING ON ENVIRONMENT: {env['name']}{bcolors.ENDC}")
+    # print(f"{bcolors.HEADER}WORKING ON ENVIRONMENT: {env['name']}{bcolors.ENDC}")
 
     # Read env_vars file
     env_var_filename = env['name'].replace(' ', "-") + '.env_vars'
@@ -99,9 +107,9 @@ for env in envs:
                 env_name, env_val = line.split('=')
                 existing_env[env_name]=env_val
     
-    print(f"\t{bcolors.OKORANGE}Benchmark name: {existing_env['BENCHMARK_NAME']}{bcolors.ENDC}")
-    print(f"\t{bcolors.OKORANGE}env_vars file: {os.path.join(os.path.dirname(__file__), 'env_files', env_var_filename)}{bcolors.ENDC}")
-    print(f"\t{bcolors.OKORANGE}autobench conf file: {os.path.join(os.path.dirname(__file__), 'env_files',  autobench_conf_filename)}{bcolors.ENDC}")
+    # print(f"\t{bcolors.OKORANGE}Benchmark name: {existing_env['BENCHMARK_NAME']}{bcolors.ENDC}")
+    # print(f"\t{bcolors.OKORANGE}env_vars file: {os.path.join(os.path.dirname(__file__), 'env_files', env_var_filename)}{bcolors.ENDC}")
+    # print(f"\t{bcolors.OKORANGE}autobench conf file: {os.path.join(os.path.dirname(__file__), 'env_files',  autobench_conf_filename)}{bcolors.ENDC}")
 
     # get DBT2 instance ID from a cloudformation stack
     cfn = boto3.client('cloudformation')
@@ -113,25 +121,36 @@ for env in envs:
     for output in stack_outputs:
         if output['OutputKey'] == 'dbt2InstId':
             dbt2InstId = output['OutputValue']
+            dbt2InstIds.append(dbt2InstId)
+
+print(f"\t{bcolors.OKORANGE}DBT2 instance ID(s): {dbt2InstIds}{bcolors.ENDC}")
+
+print(f"\n{bcolors.OKBLUE}Setting up DBT2 instance(s) for sysbench...{bcolors.ENDC}")
+ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env-files/*.env_vars; cd /home/ssm-user/mysql-auto-benchmarking; bash ./setup-dbt2-instance-for-sysbench.sh'"
+run_ssm_command(ssm_command,'Setting up DBT2 instances for sysbench')
+
+print(f"\n{bcolors.OKBLUE}Initialzing sysbench...{bcolors.ENDC}")
+ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env-files/*.env_vars; cd /home/ssm-user/mysql-auto-benchmarking; bash ./init-sysbench.sh'"
+run_ssm_command(ssm_command,'Intializing sysbench')
 
 
-    # send command to DBT2 instance to setup sysbench
-    print(f"\n{bcolors.OKBLUE}Setting up DBT2 instance: {dbt2InstId} for sysbench{bcolors.ENDC}")
-    ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env-files/"+env_var_filename+"; cd /home/ssm-user/mysql-auto-benchmarking; bash ./setup-dbt2-instance-for-sysbench.sh'"
-    run_ssm_command(ssm_command)
+#     # send command to DBT2 instance to setup sysbench
+#     print(f"\n{bcolors.OKBLUE}Setting up DBT2 instance: {dbt2InstId} for sysbench{bcolors.ENDC}")
+#     ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env-files/"+env_var_filename+"; cd /home/ssm-user/mysql-auto-benchmarking; bash ./setup-dbt2-instance-for-sysbench.sh'"
+#     run_ssm_command(ssm_command)
 
-    # send command to DBT2 instance to initialize sysbench
-    print(f"\n{bcolors.OKBLUE}Initialzing sysbench...{bcolors.ENDC}")
-    # ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env-files/"+env_var_filename+"; cd /home/ssm-user/mysql-auto-benchmarking; ssh -o StrictHostKeyChecking=no $MYSQLINST'"
-    # run_ssm_command(ssm_command)
+#     # send command to DBT2 instance to initialize sysbench
+#     print(f"\n{bcolors.OKBLUE}Initialzing sysbench...{bcolors.ENDC}")
+#     # ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env-files/"+env_var_filename+"; cd /home/ssm-user/mysql-auto-benchmarking; ssh -o StrictHostKeyChecking=no $MYSQLINST'"
+#     # run_ssm_command(ssm_command)
 
-    ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env-files/"+env_var_filename+"; cd /home/ssm-user/mysql-auto-benchmarking; bash ./init-sysbench.sh'"
-    run_ssm_command(ssm_command)
+#     ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env-files/"+env_var_filename+"; cd /home/ssm-user/mysql-auto-benchmarking; bash ./init-sysbench.sh'"
+#     run_ssm_command(ssm_command)
 
-    # send command to DBT2 instance to run sysbench
-    print(f"\n{bcolors.OKBLUE}Running sysbench...{bcolors.ENDC}")
-    ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env-files/"+env_var_filename+"; cd /home/ssm-user/mysql-auto-benchmarking; bash ./run-sysbench.sh'"
-    run_ssm_command(ssm_command)
+#     # send command to DBT2 instance to run sysbench
+#     print(f"\n{bcolors.OKBLUE}Running sysbench...{bcolors.ENDC}")
+#     ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env-files/"+env_var_filename+"; cd /home/ssm-user/mysql-auto-benchmarking; bash ./run-sysbench.sh'"
+#     run_ssm_command(ssm_command)
     
 
-print(f"\n{bcolors.OKGREEN}AUTOBENCHMARKING COMPLETE!!{bcolors.ENDC}")
+# print(f"\n{bcolors.OKGREEN}AUTOBENCHMARKING COMPLETE!!{bcolors.ENDC}")
