@@ -124,9 +124,9 @@ for env in envs:
     run_ssm_command(ssm_command)
 
     # send command to DBT2 instance to run sysbench
-    print(f"\n{bcolors.OKBLUE}Initialzing sysbench...{bcolors.ENDC}")
+    print(f"\n{bcolors.OKBLUE}Running sysbench...{bcolors.ENDC}")
     ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env-files/"+env_var_filename+"; cd /home/ssm-user/mysql-auto-benchmarking; bash ./run-sysbench.sh'"
     run_ssm_command(ssm_command)
     
 
-print(f"\n{bcolors.OKGREEN}INITIALIZATION COMPLETE!!{bcolors.ENDC}")
+print(f"\n{bcolors.OKGREEN}AUTOBENCHMARKING COMPLETE!!{bcolors.ENDC}")
