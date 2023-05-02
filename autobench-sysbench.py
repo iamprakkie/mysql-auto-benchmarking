@@ -40,6 +40,10 @@ def run_ssm_command(ssm_command):
         waiter.wait(
             CommandId=command_id,
             InstanceId=dbt2InstId,
+            WaiterConfig={
+                'Delay': 30,
+                'MaxAttempts': 10000
+            }
         )
     except WaiterError as err:
         print(err)

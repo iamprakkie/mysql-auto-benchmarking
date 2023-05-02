@@ -89,6 +89,8 @@ echo "Host $MYSQLINST" >> /home/ssm-user/.ssh/config
 echo "  Hostname $MYSQLINST" >> /home/ssm-user/.ssh/config
 echo "  IdentityFile /home/ssm-user/.ssh/MySQLKeyPair.pem" >> /home/ssm-user/.ssh/config
 echo "  User ssm-user" >> /home/ssm-user/.ssh/config
+echo "  StrictHostKeyChecking no" >> /home/ssm-user/.ssh/config
+echo "  UserKnownHostsFile=/dev/null" >> /home/ssm-user/.ssh/config
 chmod 600 /home/ssm-user/.ssh/config
 
 # change ownership
