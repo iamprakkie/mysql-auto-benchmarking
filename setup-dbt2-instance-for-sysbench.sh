@@ -15,6 +15,20 @@ if [[ $CURRINST != $MYDBT2INST ]]; then
     exit 1
 fi
 
+while true; do
+    MYDBT2INST_READY=$(sudo grep -c "User data script completed." /var/log/cloud-init-output.log)
+    MYSQLINST_READY=$(ssh -q $MYSQLINST 'sudo grep -c "User data script completed." /var/log/cloud-init-output.log')
+    if [[ $MYDBT2INST_READY -ge 1 && $MYSQLINST_READY -ge 1 ]]; then
+        break
+    else
+        sleep 5
+    fi
+done
+
+log 'O' "DBT2 instance is ready."
+log 'O' "MySQL instance is ready."
+log 'O' "proceeding..."
+
 log 'G-H' "Setting up DBT2 instance for running sysbench..."
 
 #create required dirs
