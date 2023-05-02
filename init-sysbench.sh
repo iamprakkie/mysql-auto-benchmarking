@@ -15,9 +15,11 @@ if [[ $CURRINST != $MYDBT2INST ]]; then
     exit 1
 fi
 
-log 'G-H' "Cleaning up any previous instance of sysbench..."
-
-/home/ssm-user/bench/bench_run.sh --default-directory /home/ssm-user/bench/sysbench --stop --skip-run --skip-start --cleanup 
+# check if file exists and then proceed
+if [ -f /home/ssm-user/bench/sysbench/iclaustron.conf ]; then
+    log 'G-H' "Cleaning up previous instance of sysbench..."
+    /home/ssm-user/bench/bench_run.sh --default-directory /home/ssm-user/bench/sysbench --stop --skip-run --skip-start --cleanup
+fi
 
 log 'G-H' "Initializing sysbench and generating sample data..."
 

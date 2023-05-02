@@ -17,9 +17,14 @@ yum install git tree jq -y
 yum install mysql-community-client -y
 
 #for dbt2
-yum install wget gcc make cmake autoconf mysql-devel -y
+yum install wget -y
+yum instal cmake -y
+yum install autoconf -y
+yum install mysql-devel -y
+yum install gcc -y
 yum install numactl -y
 yum install gnuplot -y
+yum install libncurses* -y
 
 #get token for IMDSv2
 TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")

@@ -18,6 +18,7 @@ yum install mysql-community-client -y
 
 #for dbt2
 yum install numactl -y
+yum install libncurses* -y
 
 #get token for IMDSv2
 TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
