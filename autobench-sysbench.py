@@ -129,9 +129,9 @@ print(f"\n{bcolors.OKBLUE}Setting up DBT2 instance(s) for sysbench...{bcolors.EN
 ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env-files/*.env_vars; cd /home/ssm-user/mysql-auto-benchmarking; bash ./setup-dbt2-instance-for-sysbench.sh'"
 run_ssm_command(ssm_command,'Setting up DBT2 instances for sysbench')
 
-print(f"\n{bcolors.OKBLUE}Initialzing sysbench...{bcolors.ENDC}")
-ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env-files/*.env_vars; cd /home/ssm-user/mysql-auto-benchmarking; bash ./init-sysbench.sh'"
-run_ssm_command(ssm_command,'Intializing sysbench')
+# print(f"\n{bcolors.OKBLUE}Initialzing sysbench...{bcolors.ENDC}")
+# ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env-files/*.env_vars; cd /home/ssm-user/mysql-auto-benchmarking; bash ./init-sysbench.sh'"
+# run_ssm_command(ssm_command,'Intializing sysbench')
 
 
 #     # send command to DBT2 instance to setup sysbench

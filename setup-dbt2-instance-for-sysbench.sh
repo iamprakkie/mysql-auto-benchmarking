@@ -38,12 +38,24 @@ mkdir -p /home/ssm-user/bench/sysbench # sysbench dir. This is also default-dire
 
 # Download MySQL, DBT2 and Sysbench tarballs
 #wget https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-8.0.32-el7-x86_64.tar.gz -P /home/ssm-user/bench/tarballs/
-wget -q https://dev.mysql.com/get/Downloads/MySQL-Cluster-8.0/mysql-cluster-8.0.32-el7-x86_64.tar.gz -P /home/ssm-user/bench/tarballs/
+
+if [ $INST_ARCH == "ARM_64" ]; then
+    wget -q https://downloads.mysql.com/archives/get/p/23/file/mysql-8.0.32-linux-glibc2.17-aarch64.tar.gz -P /home/ssm-user/bench/tarballs/
+# for x86_64 or other values of INST_ARCH
+else
+    wget -q https://dev.mysql.com/get/Downloads/MySQL-Cluster-8.0/mysql-cluster-8.0.32-el7-x86_64.tar.gz -P /home/ssm-user/bench/tarballs/
+fi
+
 wget -q https://downloads.mysql.com/source/dbt2-0.37.50.16.tar.gz -P /home/ssm-user/bench/tarballs/
 wget -q https://downloads.mysql.com/source/sysbench-0.4.12.16.tar.gz -P /home/ssm-user/bench/tarballs/
 
 #unpacking MySQL
-tar xfz /home/ssm-user/bench/tarballs/mysql-cluster-8.0.32-el7-x86_64.tar.gz -C /home/ssm-user/bench/mysql/
+if [ $INST_ARCH == "ARM_64" ]; then
+    tar xfz /home/ssm-user/bench/tarballs/mysql-8.0.32-linux-glibc2.17-aarch64.tar.gz -C /home/ssm-user/bench/mysql/
+# for x86_64 or other values of INST_ARCH
+else
+    tar xfz /home/ssm-user/bench/tarballs/mysql-cluster-8.0.32-el7-x86_64.tar.gz -C /home/ssm-user/bench/mysql/
+fi
 
 #unpacking DBT2
 tar xfz /home/ssm-user/bench/tarballs/dbt2-0.37.50.16.tar.gz -C /home/ssm-user/bench/tarballs/

@@ -38,16 +38,13 @@ echo "benchmark name is $BENCHMARK_NAME"
 INST_ARCH=$(aws cloudformation describe-stacks --region $MYREGION --stack-name $BENCHMARK_NAME --query "Stacks[][].Outputs[?OutputKey=='instArch'].OutputValue" --output text)
 echo "instance architecture is $INST_ARCH"
 
-if [ $INST_ARCH == "x86_64" ]; then
-    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-    unzip awscliv2.zip
-    sudo ./aws/install
-elif [ $INST_ARCH == "ARM_64" ]; then
+if [ $INST_ARCH == "ARM_64" ]; then
     curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
     unzip awscliv2.zip
     sudo ./aws/install
-else
-    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+# for x86_64 or other values of INST_ARCH    
+else 
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" 
     unzip awscliv2.zip
     sudo ./aws/install
 fi

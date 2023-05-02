@@ -36,7 +36,7 @@ with open(os.path.join(os.path.dirname(__file__), configFileName), 'r') as f:
 envs = config['environments']
     
 for env in envs:
-    print(f"{bcolors.HEADER}Working on environment: {env['name']}{bcolors.ENDC}")
+    co
 
     # set iops for gp2    
     volType = env['volumetype'] if not env['instancetype'].startswith('r5b') else 'io2'
