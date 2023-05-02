@@ -30,7 +30,8 @@ def run_ssm_command(ssm_command):
             Parameters={"commands": [ssm_command]},
             CloudWatchOutputConfig={
                 'CloudWatchOutputEnabled': True
-                }
+                },
+            TimeoutSeconds=172800
         )
 
     command_id = reponse['Command']['CommandId']
