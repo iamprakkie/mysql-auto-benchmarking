@@ -25,7 +25,7 @@ class bcolors:
 def run_ssm_command(ssm_command,comment):
     ssm = boto3.client('ssm')
     reponse = ssm.send_command(
-            InstanceIds=[dbt2InstId],
+            InstanceIds=dbt2InstIds,
             DocumentName='AWS-RunShellScript',
             Parameters={"commands": [ssm_command], 'executionTimeout':['172800']},
             CloudWatchOutputConfig={
@@ -39,32 +39,32 @@ def run_ssm_command(ssm_command,comment):
 
     command_id = reponse['Command']['CommandId']
 
-    waiter = ssm.get_waiter("command_executed")
-    try:
-        waiter.wait(
-            CommandId=command_id,
-            InstanceId=dbt2InstId,
-            WaiterConfig={
-                'Delay': 30,
-                'MaxAttempts': 10000
-            }
-        )
-    except WaiterError as err:
-        print(err)
+    for dbt2InstId in dbt2InstIds:        
+        waiter = ssm.get_waiter("command_executed")
+        try:
+            waiter.wait(
+                CommandId=command_id,
+                InstanceId=dbt2InstId,
+                WaiterConfig={
+                    'Delay': 30,
+                    'MaxAttempts': 10000
+                }
+            )
+        except WaiterError as err:
+            print(err)
 
-    command_output = ssm.get_command_invocation(
-            CommandId=command_id,InstanceId=dbt2InstId)
+        command_output = ssm.get_command_invocation(CommandId=command_id,InstanceId=dbt2InstId)
 
-    print()
-    print(f"\t{bcolors.OKCYAN}CommandId: {command_output['CommandId']}{bcolors.ENDC}")
-    print(f"\t{bcolors.OKCYAN}InstanceId: {command_output['InstanceId']}{bcolors.ENDC}")
-    print(f"\t{bcolors.BOLD}Status: {command_output['Status']}{bcolors.ENDC}")
+        print()
+        print(f"\t{bcolors.OKCYAN}CommandId: {command_output['CommandId']}{bcolors.ENDC}")
+        print(f"\t{bcolors.OKCYAN}InstanceId: {command_output['InstanceId']}{bcolors.ENDC}")
+        print(f"\t{bcolors.BOLD}Status: {command_output['Status']}{bcolors.ENDC}")
 
-    print(f"\t{bcolors.OKWHITE2}StandardOutputContent: {command_output['StandardOutputContent']}{bcolors.ENDC}")
+        print(f"\t{bcolors.OKWHITE2}StandardOutputContent: {command_output['StandardOutputContent']}{bcolors.ENDC}")
     
-    if command_output['StandardErrorContent'] and not command_output['Status'] == 'Success':
-        print(f"\t{bcolors.FAIL}StandardErrorContent: {command_output['StandardErrorContent']}{bcolors.ENDC}")
-    print('-'*100)    
+        if command_output['StandardErrorContent'] and not command_output['Status'] == 'Success':
+            print(f"\t{bcolors.FAIL}StandardErrorContent: {command_output['StandardErrorContent']}{bcolors.ENDC}")
+        print('-'*100)    
 
 # Get config file name as command line argument
 if len(os.sys.argv) > 1:
@@ -129,10 +129,14 @@ print(f"\n{bcolors.OKBLUE}Setting up DBT2 instance(s) for sysbench...{bcolors.EN
 ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env-files/*.env_vars; cd /home/ssm-user/mysql-auto-benchmarking; bash ./setup-dbt2-instance-for-sysbench.sh'"
 run_ssm_command(ssm_command,'Setting up DBT2 instances for sysbench')
 
-# print(f"\n{bcolors.OKBLUE}Initialzing sysbench...{bcolors.ENDC}")
-# ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env-files/*.env_vars; cd /home/ssm-user/mysql-auto-benchmarking; bash ./init-sysbench.sh'"
-# run_ssm_command(ssm_command,'Intializing sysbench')
+print(f"\n{bcolors.OKBLUE}Initialzing sysbench...{bcolors.ENDC}")
+ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env-files/*.env_vars; cd /home/ssm-user/mysql-auto-benchmarking; bash ./init-sysbench.sh'"
+run_ssm_command(ssm_command,'Intializing sysbench')
 
+
+print(f"\n{bcolors.OKBLUE}Running sysbench...{bcolors.ENDC}")
+ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env-files/*.env_vars; cd /home/ssm-user/mysql-auto-benchmarking; bash ./run-sysbench.sh'"
+run_ssm_command(ssm_command,'Running sysbench')
 
 #     # send command to DBT2 instance to setup sysbench
 #     print(f"\n{bcolors.OKBLUE}Setting up DBT2 instance: {dbt2InstId} for sysbench{bcolors.ENDC}")

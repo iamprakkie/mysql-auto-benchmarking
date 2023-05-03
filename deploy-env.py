@@ -29,6 +29,11 @@ if len(os.sys.argv) > 1:
 else:
     configFileName = 'env-config.yaml'
 
+choice = input(f"{bcolors.OKCYAN}This script will create environment(s) as configured in {configFileName}.\nDo you want to proceed? (y/n) {bcolors.ENDC}")
+if choice.lower() != 'y':
+    print(f"{bcolors.OKRED}Exiting...{bcolors.ENDC}")
+    exit()
+
 # Read environments config file
 with open(os.path.join(os.path.dirname(__file__), configFileName), 'r') as f:
     config = yaml.load(f, Loader=yaml.Loader)
