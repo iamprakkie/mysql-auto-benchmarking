@@ -139,3 +139,4 @@ cdk.out
 *.env_vars
 env_vars/
 env_files/
+.vscode
