@@ -73,7 +73,7 @@ class EC2InstanceStack(Stack):
 
         # Architecture based machine image selection
         if ec2.InstanceType(instType).architecture == ec2.InstanceArchitecture.ARM_64:
-            amzn_linux = ec2.MachineImage.latest_amazon_linux2023(
+            amzn_linux = ec2.MachineImage.latest_amazon_linux2(
                 #generation=ec2.AmazonLinuxGeneration.AMAZON_LINUX_2023,
                 edition=ec2.AmazonLinuxEdition.STANDARD,
                 #virtualization=ec2.AmazonLinuxVirt.HVM,
@@ -81,7 +81,7 @@ class EC2InstanceStack(Stack):
                 #storage=ec2.AmazonLinuxStorage.GENERAL_PURPOSE                
                 )
         else:
-            amzn_linux = ec2.MachineImage.latest_amazon_linux2023(
+            amzn_linux = ec2.MachineImage.latest_amazon_linux2(
                 #generation=ec2.AmazonLinuxGeneration.AMAZON_LINUX_2023,
                 edition=ec2.AmazonLinuxEdition.STANDARD,
                 #virtualization=ec2.AmazonLinuxVirt.HVM,
