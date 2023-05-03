@@ -23,8 +23,6 @@ fi
 
 log 'G-H' "Initializing sysbench and generating sample data..."
 
-# ./configure --with-mysql=/home/ssm-user/bench/sysbench/basedir/mysql-8.0.32-linux-glibc2.17-aarch64 --prefix=/home/ssm-user/bench/sysbench/basedir/sysbench-0.4.12.16 --with-extra-ldflags=-all-static --build=aarch64-unknown-linux-gnu
-
 /home/ssm-user/bench/bench_run.sh --default-directory /home/ssm-user/bench/sysbench --init --generate-dbt2-data --skip-run --verbose > /home/ssm-user/bench/sysbench-init-output.log 2>&1 
 
 mkdir -p /home/ssm-user/bench/mysql/sysbench-0.4.12.16/bin
