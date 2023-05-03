@@ -12,16 +12,16 @@
 1. Modify `autobench.conf` as required. You can refer to sample files `fine-tuned-sysbench-autobench.conf` or `basic-sysbench-autobench.conf`.
 
 1. Configure required environments in `env-config.yaml`. Here is a sample configuration
-```yaml
-environments:
-  - name: "r5.8xlarge gp3 Environment" # give unique name
-    region: "us-west-2" # region where env need to be deployed
-    instancetype: "r5.8xlarge" # type of instance
-    volumetype: "gp3" # gp2, gp3, io1 or io2
-    volumesize: 500 # volume size in GB
-    iops: 3000 # iops will be used only for gp3, io1 and io2 volume types
-    autobenchconf: "fine-tuned-sysbench-autobench.conf" # autobench conf file name
-```
+    ```yaml
+    environments:
+    - name: "r5.8xlarge gp3 Environment" # give unique name
+        region: "us-west-2" # region where env need to be deployed
+        instancetype: "r5.8xlarge" # type of instance
+        volumetype: "gp3" # gp2, gp3, io1 or io2
+        volumesize: 500 # volume size in GB
+        iops: 3000 # iops will be used only for gp3, io1 and io2 volume types
+        autobenchconf: "fine-tuned-sysbench-autobench.conf" # autobench conf file name
+    ```
 
 1. Verify and do required changes to user data of MySQL and DBT2 instances. They are in `user-data-mysql-instance.sh` and `user-data-dbt2-instance.sh` respectively.
 
@@ -45,13 +45,13 @@ environments:
 1. In similar, you can connect to MYSQL instance `./connect-to-mysql-instance.sh` script.
 
 1. Run autobenchmark using below mentioned command:
-```bash
-python autobench-sysbench.py
-```
+    ```bash
+    python autobench-sysbench.py
+    ```
 
 ## Clean up
 
-* Cleanup all environments using below mentioned commands:
+Cleanup all environments using below mentioned commands:
     ```bash
     python cleanup-env.py
     python delete-artifacts-buckets.py
