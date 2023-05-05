@@ -73,6 +73,8 @@ class EC2InstanceStack(Stack):
 
         # Architecture based machine image selection
         if ec2.InstanceType(instType).architecture == ec2.InstanceArchitecture.ARM_64:
+            print(f"{bcolors.FAIL}ARM64 architecture is not supported. {bcolors.ENDC}")
+            os.sys.exit(1)
             amzn_linux = ec2.MachineImage.latest_amazon_linux2(
                 #generation=ec2.AmazonLinuxGeneration.AMAZON_LINUX_2023,
                 edition=ec2.AmazonLinuxEdition.STANDARD,
