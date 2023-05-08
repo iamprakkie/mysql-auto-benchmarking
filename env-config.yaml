@@ -7,9 +7,10 @@ environments:
     volumesize: 500
     iops: 3000 # iops will be used only for gp3, io1 and io2 volume types.
     autobenchconf: "fine-tuned-sysbench-autobench.conf"
-  # - name: "r5b.8xlarge io2 block express Environment"
-  #   region: "us-west-2" # note that r5b instances are not available in us-east-1 yet  
-  #   instancetype: "r5b.8xlarge"
-  #   volumesize: 500
-  #   iops: 3000
-  #   autobenchconf: "fine-tuned-sysbench-autobench.conf"
+  - name: "r7g.8xlarge io2 block express Environment"
+    region: "us-west-2" # note that r5b instances are not available in us-east-1 yet  
+    instancetype: "r7g.8xlarge"
+    volumetype: "io1"
+    volumesize: 500
+    iops: 3000
+    autobenchconf: "fine-tuned-sysbench-autobench.conf"

@@ -7,6 +7,7 @@ import yaml
 import os
 import uuid
 import subprocess
+import boto3
 
 class bcolors:
     HEADER = '\033[95m'
@@ -31,7 +32,7 @@ else:
 
 choice = input(f"{bcolors.OKCYAN}This script will create environment(s) as configured in {configFileName}.\nDo you want to proceed? (y/n) {bcolors.ENDC}")
 if choice.lower() != 'y':
-    print(f"{bcolors.OKRED}Exiting...{bcolors.ENDC}")
+    print(f"{bcolors.OKRED}Exiting..{bcolors.ENDC}")
     exit()
 
 # Read environments config file
@@ -41,6 +42,15 @@ with open(os.path.join(os.path.dirname(__file__), configFileName), 'r') as f:
 envs = config['environments']
     
 for env in envs:
+    # Checking for supported architecture
+    ec2 = boto3.client('ec2')
+    response = ec2.describe_instance_types(InstanceTypes=[env['instancetype']])
+    architecture = response['InstanceTypes'][0]['ProcessorInfo']['SupportedArchitectures'][0]
+
+    if architecture != 'x86_64':
+        print(f"{bcolors.FAIL}Unsupported architecture: {architecture} of instance type {env['instancetype']} in environment {env['name']}. Skipping..{bcolors.ENDC}")
+        continue
+
     # set iops for gp2    
     volType = env['volumetype'] if not env['instancetype'].startswith('r5b') else 'io2'
     if volType == 'gp2':
@@ -92,12 +102,10 @@ for env in envs:
     }
 
     print(f"\t{bcolors.OKORANGE}CDK deployment in progress...{bcolors.ENDC}")
-    # cdk_command = "cdk synth --color=always 2>&1 | grep -v -E '(Successfully synthesized)|(Supply a stack id)' 1>&2"
     cdk_command = "cdk deploy --require-approval never --color=always"
 
 
     # Issue with stdout for cdk: https://github.com/aws/aws-cdk/issues/5552
     process = subprocess.Popen(cdk_command, shell=True, env=env_vars, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     print(process.stdout.read().decode('utf-8'))
-    #print(process.stderr.read().decode('utf-8'))
     print('-'*100)

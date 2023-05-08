@@ -17,7 +17,7 @@ class bcolors:
 
 choice = input(f"{bcolors.OKRED}{bcolors.BOLD}This script will DELETE all bucket(s) that begins with 'autobench-' and ends with '-artifacts' in your AWS account.\nDo you want to proceed? (y/n) {bcolors.ENDC}")
 if choice.lower() != 'y':
-    print(f"{bcolors.OKRED}Exiting...{bcolors.ENDC}")
+    print(f"{bcolors.OKRED}Exiting..{bcolors.ENDC}")
     exit()
 
 

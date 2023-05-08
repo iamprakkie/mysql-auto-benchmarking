@@ -84,7 +84,14 @@ dbt2InstIds=[]
 print(f"{bcolors.HEADER}Autobenchmarking Environments using sysbench as configured in {configFileName}{bcolors.ENDC}")
 
 for env in envs:
-    # print(f"{bcolors.HEADER}WORKING ON ENVIRONMENT: {env['name']}{bcolors.ENDC}")
+    # Checking for supported architecture
+    ec2 = boto3.client('ec2')
+    response = ec2.describe_instance_types(InstanceTypes=[env['instancetype']])
+    architecture = response['InstanceTypes'][0]['ProcessorInfo']['SupportedArchitectures'][0]
+
+    if architecture != 'x86_64':
+        print(f"{bcolors.FAIL}Unsupported architecture: {architecture} of instance type {env['instancetype']} in environment {env['name']}. Skipping..{bcolors.ENDC}")
+        continue
 
     # Read env_vars file
     env_var_filename = env['name'].replace(' ', "-") + '.env_vars'

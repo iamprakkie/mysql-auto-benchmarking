@@ -5,9 +5,6 @@ from aws_cdk.aws_s3_assets import Asset
 from aws_cdk import (
     aws_ec2 as ec2,
     aws_iam as iam,
-    # aws_secretsmanager as secretsmanager,
-    # aws_ssm as ssm,
-    # aws_kms as kms,
     aws_s3 as s3,
     aws_s3_deployment as s3deploy,
     App, Stack, CfnOutput 
@@ -71,25 +68,15 @@ class EC2InstanceStack(Stack):
         #get subnet ID           
         publicSubnetId = vpc.select_subnets(subnet_group_name="public").subnet_ids[0]
 
-        # Architecture based machine image selection
-        if ec2.InstanceType(instType).architecture == ec2.InstanceArchitecture.ARM_64:
-            print(f"{bcolors.FAIL}ARM64 architecture is not supported. {bcolors.ENDC}")
+        # Checking for supported architecture
+        if ec2.InstanceType(instType).architecture != ec2.InstanceArchitecture.X86_64:
+            print(f"{bcolors.FAIL}Unsupported architecture: {ec2.InstanceType(instType).architecture} of instance type {instType} in environment {envName}. Exiting..{bcolors.ENDC}")
             os.sys.exit(1)
-            amzn_linux = ec2.MachineImage.latest_amazon_linux2(
-                #generation=ec2.AmazonLinuxGeneration.AMAZON_LINUX_2023,
-                edition=ec2.AmazonLinuxEdition.STANDARD,
-                #virtualization=ec2.AmazonLinuxVirt.HVM,
-                cpu_type=ec2.AmazonLinuxCpuType.ARM_64,
-                #storage=ec2.AmazonLinuxStorage.GENERAL_PURPOSE                
-                )
-        else:
-            amzn_linux = ec2.MachineImage.latest_amazon_linux2(
-                #generation=ec2.AmazonLinuxGeneration.AMAZON_LINUX_2023,
-                edition=ec2.AmazonLinuxEdition.STANDARD,
-                #virtualization=ec2.AmazonLinuxVirt.HVM,
-                cpu_type=ec2.AmazonLinuxCpuType.X86_64,
-                #storage=ec2.AmazonLinuxStorage.GENERAL_PURPOSE
-                )       
+            
+        amzn_linux = ec2.MachineImage.latest_amazon_linux2(
+            edition=ec2.AmazonLinuxEdition.STANDARD,
+            cpu_type=ec2.AmazonLinuxCpuType.X86_64,
+            )       
             
         # Instance Role and SSM Managed Policy for MySQL instance
         cfnArn = "arn:aws:cloudformation:" + region + ":" + self.account + ":stack/" + mySQLAppName + "*"
@@ -194,7 +181,6 @@ class EC2InstanceStack(Stack):
         )        
 
         kp_mysql = ec2.CfnKeyPair(self, "MySQLCfnKeyPair", key_name='MySQLCfnKeyPair'+mySQLAppName)
-        #kp_pem = ssm.StringParameter.value_for_secure_string_parameter(self,kp_mysql.attr_key_pair_id,1)
 
         # mySQL Instance
         mySQLInstance = ec2.Instance(self, "MySQLInstance",
@@ -285,22 +271,13 @@ class EC2InstanceStack(Stack):
         autobench_conf_filename = envName.replace(' ', "-")+'-'+autobenchConf
         autobench_conf_filename = autobench_conf_filename.lower()
         
-        envDeployment = s3deploy.BucketDeployment(self, 'S3BucketDeployment'+mySQLAppName,
-                sources=[s3deploy.Source.asset(os.path.join(dirname, 'env_files'))],
-                exclude=['**'],
-                include=[env_var_filename,autobench_conf_filename],
-                destination_bucket=s3_bucket,
-                access_control=s3.BucketAccessControl.PRIVATE,
-            )        
-
-        # mysqlRootkey = kms.Key(self, "MySQLRootKMS")
-        # mysqlBenchmarkerkey = kms.Key(self, "MySQLBenchmarkerKMS")
-        # mysql_root_secret = secretsmanager.Secret(self, "MySQLRootSecret", generate_secret_string=secretsmanager.SecretStringGenerator(exclude_punctuation=False,exclude_characters="'\\/\"`$;,|:\{\}\[\]\(\)\<\>&"), encryption_key=mysqlRootkey,)
-        # mysql_benchmarker_secret = secretsmanager.Secret(self, "MySQLBenchmarkerSecret", generate_secret_string=secretsmanager.SecretStringGenerator(exclude_punctuation=False,exclude_characters="'\\/\"`$;,|:\{\}\[\]\(\)\<\>&"), encryption_key=mysqlBenchmarkerkey)
-        
-        # mysql_root_secret.grant_read(mySQLInstance.role)
-        # mysql_benchmarker_secret.grant_read(mySQLInstance.role)
-        # mysql_benchmarker_secret.grant_read(dbt2Instance.role)
+        s3deploy.BucketDeployment(self, 'S3BucketDeployment'+mySQLAppName,
+            sources=[s3deploy.Source.asset(os.path.join(dirname, 'env_files'))],
+            exclude=['**'],
+            include=[env_var_filename,autobench_conf_filename],
+            destination_bucket=s3_bucket,
+            access_control=s3.BucketAccessControl.PRIVATE,
+        )        
 
         #Cloudformation Outputs
         CfnOutput(self, 'vpcId', value=vpc.vpc_id, export_name='ExportedVpcId'+mySQLAppName)
@@ -309,10 +286,8 @@ class EC2InstanceStack(Stack):
         CfnOutput(self, "dbt2InstId", value=dbt2Instance.instance_id, export_name='ExportedDBT2InstId'+mySQLAppName)
         CfnOutput(self, "dbt2PrivIP", value=dbt2Instance.instance_private_ip, export_name='ExportedDBT2PrivIP'+mySQLAppName)
         CfnOutput(self, "instArch", value=ec2.InstanceType(instType).architecture.value, export_name='ExportedInstArch'+mySQLAppName)
-        # CfnOutput(self, "mysqlRootSecret", value=mysql_root_secret.secret_name, export_name='ExportedMySQLRootSecret'+mySQLAppName)
-        # CfnOutput(self, "mysqlBenchmarkerSecret", value=mysql_benchmarker_secret.secret_name, export_name='ExportedMySQLBenchmarkerSecret'+mySQLAppName)
+        CfnOutput(self, "s3BucketName", value=s3_bucket.bucket_name, export_name='ExportedS3BucketName'+mySQLAppName)
         CfnOutput(self,"mysqlRegion",value=region, export_name='ExportedMySQLRegion'+mySQLAppName)
-        #CfnOutput(self, "sgId", value=sg_mysql.security_group_id, export_name='ExportedSgId'+mySQLAppName)
         CfnOutput(self,"keyPairId", value=kp_mysql.attr_key_pair_id, export_name='ExportedKeyPairId'+mySQLAppName)
         
 app = App()

@@ -5,6 +5,7 @@
 import yaml
 import os
 import subprocess
+import boto3
 
 class bcolors:
     HEADER = '\033[95m'
@@ -29,7 +30,7 @@ else:
 
 choice = input(f"{bcolors.OKRED}{bcolors.BOLD}This script will CLEANUP environment(s) configured in {configFileName}.\nDo you want to proceed? (y/n) {bcolors.ENDC}")
 if choice.lower() != 'y':
-    print(f"{bcolors.OKRED}Exiting...{bcolors.ENDC}")
+    print(f"{bcolors.OKRED}Exiting..{bcolors.ENDC}")
     exit()
 
 
@@ -40,8 +41,17 @@ with open(os.path.join(os.path.dirname(__file__), configFileName), 'r') as f:
 envs = config['environments']
     
 for env in envs:
-    print(f"{bcolors.HEADER}Cleaning environment: {env['name']}{bcolors.ENDC}")
-    
+    # Checking for supported architecture
+    ec2 = boto3.client('ec2')
+    response = ec2.describe_instance_types(InstanceTypes=[env['instancetype']])
+    architecture = response['InstanceTypes'][0]['ProcessorInfo']['SupportedArchitectures'][0]
+
+    if architecture != 'x86_64':
+        print(f"{bcolors.FAIL}Unsupported architecture: {architecture} of instance type {env['instancetype']} in environment {env['name']}. Skipping..{bcolors.ENDC}")
+        continue
+
+    print(f"{bcolors.HEADER}Cleaning environment: {env['name']}{bcolors.ENDC}")    
+
     # Read env_vars file
     env_var_filename = env['name'].replace(' ', "-") + '.env_vars'
     env_var_filename = env_var_filename.lower()
