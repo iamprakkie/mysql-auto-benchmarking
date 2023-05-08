@@ -34,6 +34,9 @@ MYINSTID=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -s http://169.254.169.254/
 BENCHMARK_NAME=$(aws ec2 describe-instances --region $MYREGION --instance-ids $MYINSTID --query "Reservations[*].Instances[*].Tags[?Key=='aws:cloudformation:stack-name'].Value" --output text)
 echo "benchmark name is $BENCHMARK_NAME"
 
+#retrieve S3 bucket name from Cfn output
+S3_BUCKET_NAME=$(aws cloudformation describe-stacks --region $MYREGION --stack-name $BENCHMARK_NAME --query "Stacks[][].Outputs[?OutputKey=='s3BucketName'].OutputValue" --output text)
+
 # aws cli v2
 INST_ARCH=$(aws cloudformation describe-stacks --region $MYREGION --stack-name $BENCHMARK_NAME --query "Stacks[][].Outputs[?OutputKey=='instArch'].OutputValue" --output text)
 echo "instance architecture is $INST_ARCH"
@@ -86,6 +89,7 @@ echo "export BENCHMARK_NAME=$BENCHMARK_NAME" > /etc/profile.d/custom-envs.sh
 echo "export INST_ARCH=$INST_ARCH" >> /etc/profile.d/custom-envs.sh
 echo "export MYSQLINST=$MYSQLINST" >> /etc/profile.d/custom-envs.sh
 echo "export MYDBT2INST=$MYDBT2INST" >> /etc/profile.d/custom-envs.sh
+echo "export S3_BUCKET_NAME=$S3_BUCKET_NAME" >> /etc/profile.d/custom-envs.sh
 echo "export USER=ssm-user" >> /etc/profile.d/custom-envs.sh
 
 echo "custom envs created"
@@ -98,7 +102,7 @@ mkdir -p /mysql-data/mysql-data-dir # MySQL data directory. This is the location
 ln -s /mysql-data/mysql-data-dir /home/ssm-user/bench/mysql-data-dir
 
 # Download env-file from S3 bucket
-# aws s3 cp --region $MYREGION s3://${BENCHMARK_NAME}-artifacts/ /home/ssm-user/bench/env-files/ --recursive
+# aws s3 cp --region $MYREGION s3://${S3_BUCKET_NAME}/ /home/ssm-user/bench/env-files/ --recursive
 
 # echo "downloaded env-files"
 
