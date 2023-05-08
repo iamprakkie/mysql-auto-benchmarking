@@ -23,6 +23,8 @@
         autobenchconf: "fine-tuned-sysbench-autobench.conf" # autobench conf file name
     ```
 
+    >**NOTE: Only X86_64 architecture is supported currently.**
+
 1. Verify and do required changes to user data of MySQL and DBT2 instances. They are in `user-data-mysql-instance.sh` and `user-data-dbt2-instance.sh` respectively.
 
 
@@ -35,6 +37,7 @@
     cdk bootstrap
     python deploy-env.py
     ```
+    >**NOTE:** deploy-env script looks for .done files in env_files dir and when found, skips respective environment.
 
 1. You can start SSM session to DBT2 instance using below mentioned commands:
     ```bash
