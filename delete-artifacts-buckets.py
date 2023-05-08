@@ -35,7 +35,7 @@ for bucket in buckets["Buckets"]:
         try:
             response = s3.head_bucket(Bucket=bucket["Name"])
         except:
-            print(f'{bcolors.FAIL}Error in accessing bucket. Skipping...{bcolors.ENDC}')
+            print(f'{bcolors.FAIL}Error in accessing bucket. Skipping..{bcolors.ENDC}')
             print('-'*100)
             continue
         

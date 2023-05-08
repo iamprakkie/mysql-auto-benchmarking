@@ -2,7 +2,7 @@
 
 source ./format_display.sh
 
-log 'G-H' "Preparing host for running Auto Benchmarking of MySQL using sysbench..."
+log 'G-H' "Preparing host for running Auto Benchmarking of MySQL using sysbench.."
 
 # install git
 sudo yum install git -y

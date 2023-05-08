@@ -49,6 +49,7 @@ for env in envs:
 
     if architecture != 'x86_64':
         print(f"{bcolors.FAIL}Unsupported architecture: {architecture} of instance type {env['instancetype']} in environment {env['name']}. Skipping..{bcolors.ENDC}")
+        print('-'*100)
         continue
 
     # set iops for gp2    
@@ -102,10 +103,11 @@ for env in envs:
     }
 
     print(f"\t{bcolors.OKORANGE}CDK deployment in progress...{bcolors.ENDC}")
-    cdk_command = "cdk deploy --require-approval never --color=always"
-
+    cdk_command = "cdk synth"
+    # cdk_command = "cdk deploy --require-approval never --color=always"
 
     # Issue with stdout for cdk: https://github.com/aws/aws-cdk/issues/5552
     process = subprocess.Popen(cdk_command, shell=True, env=env_vars, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    print(process.returncode)
     print(process.stdout.read().decode('utf-8'))
     print('-'*100)

@@ -91,6 +91,7 @@ for env in envs:
 
     if architecture != 'x86_64':
         print(f"{bcolors.FAIL}Unsupported architecture: {architecture} of instance type {env['instancetype']} in environment {env['name']}. Skipping..{bcolors.ENDC}")
+        print('-'*100)
         continue
 
     # Read env_vars file
@@ -132,16 +133,16 @@ for env in envs:
 
 print(f"\t{bcolors.OKORANGE}DBT2 instance ID(s): {dbt2InstIds}{bcolors.ENDC}")
 
-print(f"\n{bcolors.OKBLUE}Setting up DBT2 instance(s) for sysbench...{bcolors.ENDC}")
+print(f"\n{bcolors.OKBLUE}Setting up DBT2 instance(s) for sysbench..{bcolors.ENDC}")
 ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env-files/*.env_vars; cd /home/ssm-user/mysql-auto-benchmarking; bash ./setup-dbt2-instance-for-sysbench.sh'"
 run_ssm_command(ssm_command,'Setting up DBT2 instances for sysbench')
 
-print(f"\n{bcolors.OKBLUE}Initialzing sysbench...{bcolors.ENDC}")
+print(f"\n{bcolors.OKBLUE}Initialzing sysbench..{bcolors.ENDC}")
 ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env-files/*.env_vars; cd /home/ssm-user/mysql-auto-benchmarking; bash ./init-sysbench.sh'"
 run_ssm_command(ssm_command,'Intializing sysbench')
 
 
-print(f"\n{bcolors.OKBLUE}Running sysbench...{bcolors.ENDC}")
+print(f"\n{bcolors.OKBLUE}Running sysbench..{bcolors.ENDC}")
 ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env-files/*.env_vars; cd /home/ssm-user/mysql-auto-benchmarking; bash ./run-sysbench.sh'"
 run_ssm_command(ssm_command,'Running sysbench')
 

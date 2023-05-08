@@ -48,6 +48,7 @@ for env in envs:
 
     if architecture != 'x86_64':
         print(f"{bcolors.FAIL}Unsupported architecture: {architecture} of instance type {env['instancetype']} in environment {env['name']}. Skipping..{bcolors.ENDC}")
+        print('-'*100)
         continue
 
     print(f"{bcolors.HEADER}Cleaning environment: {env['name']}{bcolors.ENDC}")    

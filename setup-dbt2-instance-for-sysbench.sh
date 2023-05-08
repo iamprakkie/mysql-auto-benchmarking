@@ -27,9 +27,9 @@ done
 
 log 'O' "DBT2 instance is ready."
 log 'O' "MySQL instance is ready."
-log 'O' "proceeding..."
+log 'O' "proceeding.."
 
-log 'G-H' "Setting up DBT2 instance for running sysbench..."
+log 'G-H' "Setting up DBT2 instance for running sysbench.."
 
 #create required dirs
 mkdir -p /home/ssm-user/bench /home/ssm-user/bench/mysql # benchmarking dir. Ensure autobench.conf reflects this configuration.

@@ -17,11 +17,11 @@ fi
 
 # check if file exists and then proceed
 if [ -f /home/ssm-user/bench/sysbench/iclaustron.conf ]; then
-    log 'G-H' "Cleaning up previous instance of sysbench..."
+    log 'G-H' "Cleaning up previous instance of sysbench.."
     /home/ssm-user/bench/bench_run.sh --default-directory /home/ssm-user/bench/sysbench --stop --skip-run --skip-start --cleanup
 fi
 
-log 'G-H' "Initializing sysbench and generating sample data..."
+log 'G-H' "Initializing sysbench and generating sample data.."
 
 /home/ssm-user/bench/bench_run.sh --default-directory /home/ssm-user/bench/sysbench --init --generate-dbt2-data --skip-run --verbose > /home/ssm-user/bench/sysbench-init-output.log 2>&1 
 

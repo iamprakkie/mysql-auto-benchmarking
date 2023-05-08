@@ -15,8 +15,8 @@ if [[ $CURRINST != $MYDBT2INST ]]; then
     exit 1
 fi
 
-log 'G-H' "Running sysbench.."
+log 'G-H' "Uploading sysbench results.."
 
-/home/ssm-user/bench/bench_run.sh --default-directory /home/ssm-user/bench/sysbench --skip-start --verbose > /home/ssm-user/bench/sysbench-run-output.log 2>&1
+# /home/ssm-user/bench/bench_run.sh --default-directory /home/ssm-user/bench/sysbench --skip-start --verbose > /home/ssm-user/bench/sysbench-run-output.log 2>&1
 
 log 'G' "Sysbench run COMPLETE. Run log is available at /home/ssm-user/bench/sysbench-run-output.log."

@@ -14,3 +14,10 @@ environments:
     volumesize: 500
     iops: 3000
     autobenchconf: "fine-tuned-sysbench-autobench.conf"
+  - name: "r5.8xlarge io1 Environment"
+    region: "us-west-2"
+    instancetype: "r5.8xlarge"
+    volumetype: "io1"
+    volumesize: 500
+    iops: 3000 # iops will be used only for gp3, io1 and io2 volume types.
+    autobenchconf: "fine-tuned-sysbench-autobench.conf"
