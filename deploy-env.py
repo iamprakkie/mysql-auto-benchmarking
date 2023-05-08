@@ -63,13 +63,21 @@ for env in envs:
     benchmarkName = "autobench-" + env['instancetype'].replace(".", "-") + "-" + volType + "-" + iops + "-" +str(uuid.uuid1())[:8]
     print(f"\t{bcolors.OKORANGE}Benchmark name: {benchmarkName}{bcolors.ENDC}")
 
-    # Create env export file for every environment
+    # Create env export file and other artifacts for every environment
     os.makedirs(os.path.join(os.path.dirname(__file__), 'env_files'), exist_ok=True)
 
     env_var_filename = env['name'].replace(' ', "-") + '.env_vars'
     env_var_filename = env_var_filename.lower()
+    done_filename = env['name'].replace(' ', "-") + '.done'
+    done_filename = done_filename.lower()
     autobench_conf_filename = env['name'].replace(' ', "-")+'-'+env['autobenchconf']
     autobench_conf_filename = autobench_conf_filename.lower()
+
+    # check if file exists
+    if os.path.isfile(os.path.join(os.path.dirname(__file__), 'env_files', done_filename)):
+        print(f"\t{bcolors.OKBLUE}Environment {env['name']} already created. Skipping..{bcolors.ENDC}")
+        print('-'*100)
+        continue
 
     with open(os.path.join(os.path.dirname(__file__), 'env_files', env_var_filename), 'w') as fw:
         fw.write('export BENCHMARK_NAME=' + benchmarkName + '\n')
@@ -103,11 +111,15 @@ for env in envs:
     }
 
     print(f"\t{bcolors.OKORANGE}CDK deployment in progress...{bcolors.ENDC}")
-    cdk_command = "cdk synth"
-    # cdk_command = "cdk deploy --require-approval never --color=always"
+    cdk_command = "cdk deploy --require-approval never --color=always"
 
     # Issue with stdout for cdk: https://github.com/aws/aws-cdk/issues/5552
     process = subprocess.Popen(cdk_command, shell=True, env=env_vars, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    print(process.returncode)
-    print(process.stdout.read().decode('utf-8'))
+    exit_code = process.wait()
+    if exit_code != 0:
+        print(f"{bcolors.FAIL}CDK deployment failed.{bcolors.ENDC}")
+        print(f"{bcolors.FAIL}{process.stdout.read().decode('utf-8')}.{bcolors.ENDC}")
+    else:
+        print(f"\t{bcolors.OKWHITE}{process.stdout.read().decode('utf-8')}.{bcolors.ENDC}")
+        os.system('touch ' + os.path.join(os.path.dirname(__file__), 'env_files', done_filename))
     print('-'*100)

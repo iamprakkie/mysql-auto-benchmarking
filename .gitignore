@@ -137,6 +137,7 @@ cdk.out
 
 # other files
 *.env_vars
+*.done
 env_vars/
 env_files/
 .vscode
