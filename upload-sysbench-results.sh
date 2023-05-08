@@ -15,8 +15,31 @@ if [[ $CURRINST != $MYDBT2INST ]]; then
     exit 1
 fi
 
-log 'G-H' "Uploading sysbench results.."
+log 'G-H' "Uploading sysbench logs and results to S3 bucket.."
 
-# /home/ssm-user/bench/bench_run.sh --default-directory /home/ssm-user/bench/sysbench --skip-start --verbose > /home/ssm-user/bench/sysbench-run-output.log 2>&1
+# get region
+MYREGION=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/placement/region)
+aws configure set region $MYREGION
 
-log 'G' "Sysbench run COMPLETE. Run log is available at /home/ssm-user/bench/sysbench-run-output.log."
+# check and upload files
+if [[ -f /home/ssm-user/bench/sysbench-init-output.log ]]; then
+    aws s3 cp /home/ssm-user/bench/sysbench-init-output.log s3://${S3_BUCKET_NAME}/sysbench-init-output.log
+fi
+
+if [[ -f /home/ssm-user/bench/sysbench-run-output.log ]]; then
+    aws s3 cp /home/ssm-user/bench/sysbench-run-output.log s3://${S3_BUCKET_NAME}/sysbench-run-output.log
+fi
+
+if [[ -f /home/ssm-user/bench/sysbench/final_result_0.txt ]]; then
+    aws s3 cp /home/ssm-user/bench/sysbench/final_result_0.txt s3://${S3_BUCKET_NAME}/final_result_0.txt
+fi
+
+if [[ -f /home/ssm-user/bench/sysbench/final_result.txt ]]; then
+    aws s3 cp /home/ssm-user/bench/sysbench/final_result.txt s3://${S3_BUCKET_NAME}/final_result.txt
+fi
+
+if [[ -f /home/ssm-user/bench/sysbench/sysbench_results/oltp_rw_0_0.res ]]; then
+    aws s3 cp /home/ssm-user/bench/sysbench/sysbench_results/oltp_rw_0_0.res s3://${S3_BUCKET_NAME}/'sysbench-result-'${BENCHMARK_NAME}'.res'
+fi
+
+log 'G' "Sysbench results upload COMPLETE. Check in respective S3 bucket."

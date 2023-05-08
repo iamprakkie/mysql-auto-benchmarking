@@ -146,4 +146,8 @@ print(f"\n{bcolors.OKBLUE}Running sysbench..{bcolors.ENDC}")
 ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env-files/*.env_vars; cd /home/ssm-user/mysql-auto-benchmarking; bash ./run-sysbench.sh'"
 run_ssm_command(ssm_command,'Running sysbench')
 
+print(f"\n{bcolors.OKBLUE}Uploading sysbench results to S3 bucket..{bcolors.ENDC}")
+ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env-files/*.env_vars; cd /home/ssm-user/mysql-auto-benchmarking; bash ./upload-sysbench-results.sh'"
+run_ssm_command(ssm_command,'Uploading sysbench results to S3 bucket')
+
 print(f"\n{bcolors.OKGREEN}AUTOBENCHMARKING COMPLETE!!{bcolors.ENDC}")
