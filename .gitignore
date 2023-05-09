@@ -8,6 +8,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+.env_vars
 build/
 develop-eggs/
 dist/
@@ -104,6 +105,7 @@ celerybeat.pid
 # Environments
 .env
 .venv
+.venv/
 env/
 venv/
 ENV/
@@ -132,3 +134,10 @@ dmypy.json
 # cdk files
 cdk.out
 /*.bkp
+
+# other files
+*.env_vars
+*.done
+env_vars/
+env_files/
+.vscode

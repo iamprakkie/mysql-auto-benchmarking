@@ -5,9 +5,8 @@ from aws_cdk.aws_s3_assets import Asset
 from aws_cdk import (
     aws_ec2 as ec2,
     aws_iam as iam,
-    # aws_secretsmanager as secretsmanager,
-    aws_ssm as ssm,
-    aws_kms as kms,
+    aws_s3 as s3,
+    aws_s3_deployment as s3deploy,
     App, Stack, CfnOutput 
 )
 
@@ -16,6 +15,10 @@ class bcolors:
     OKBLUE = '\033[94m'
     OKCYAN = '\033[96m'
     OKGREEN = '\033[92m'
+    OKORANGE = '\033[33m'
+    OKRED = '\033[31m'
+    OKWHITE = '\033[37m'
+    OKWHITE2 = '\033[97m'
     WARNING = '\033[93m'
     FAIL = '\033[91m'
     ENDC = '\033[0m'
@@ -23,11 +26,14 @@ class bcolors:
     UNDERLINE = '\033[4m'
     
 dirname = os.path.dirname(__file__)
-mySQLAppName = os.getenv("BENCHMARK_NAME")
-instType = os.getenv("MYSQL_INST_TYPE", "t3.medium")
+mySQLAppName = str(os.getenv("BENCHMARK_NAME", "mysqlautobenchmarking"))
+region = str(os.getenv("BENCHMARK_REGION",  "us-west-2"))
+instType = str(os.getenv("MYSQL_INST_TYPE", "t3.medium"))
 volSize = int(os.getenv("MYSQL_VOL_SIZE", 50))
 volIOPS = int(os.getenv("MYSQL_VOL_IOPS", 150))
-inputVolType = os.getenv("MYSQL_VOL_TYPE", "gp3")
+inputVolType = str(os.getenv("MYSQL_VOL_TYPE", "gp3"))
+autobenchConf = str(os.getenv("MYSQL_AUTOBENCH_CONF", "fine-tuned-sysbench-autobench.conf"))
+envName = str(os.getenv("BENCHMARK_ENV_NAME", "MySQLAutoBenchmarking"))
 
 if inputVolType.lower() == 'gp2':
     volType = ec2.EbsDeviceVolumeType.GP2
@@ -62,16 +68,18 @@ class EC2InstanceStack(Stack):
         #get subnet ID           
         publicSubnetId = vpc.select_subnets(subnet_group_name="public").subnet_ids[0]
 
-        # AMI
-        amzn_linux = ec2.MachineImage.latest_amazon_linux(
-            generation=ec2.AmazonLinuxGeneration.AMAZON_LINUX_2,
+        # Checking for supported architecture
+        if ec2.InstanceType(instType).architecture != ec2.InstanceArchitecture.X86_64:
+            print(f"{bcolors.FAIL}Unsupported architecture: {ec2.InstanceType(instType).architecture} of instance type {instType} in environment {envName}. Exiting..{bcolors.ENDC}")
+            os.sys.exit(1)
+            
+        amzn_linux = ec2.MachineImage.latest_amazon_linux2(
             edition=ec2.AmazonLinuxEdition.STANDARD,
-            virtualization=ec2.AmazonLinuxVirt.HVM,
-            storage=ec2.AmazonLinuxStorage.GENERAL_PURPOSE
-            )
-
+            cpu_type=ec2.AmazonLinuxCpuType.X86_64,
+            )       
+            
         # Instance Role and SSM Managed Policy for MySQL instance
-        cfnArn = "arn:aws:cloudformation:" + self.region + ":" + self.account + ":stack/" + mySQLAppName + "*"
+        cfnArn = "arn:aws:cloudformation:" + region + ":" + self.account + ":stack/" + mySQLAppName + "*"
 
         mySQLInstRole = iam.Role(self, "MySQLInstanceSSM", assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"))
         mySQLInstRole.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMManagedInstanceCore"))
@@ -94,6 +102,15 @@ class EC2InstanceStack(Stack):
                     conditions = {
                         "ForAnyValue:StringEquals": {"aws:Ec2InstanceSourceVPC": vpc.vpc_id}
                     }
+                    )
+                ]))
+        mySQLInstRole.attach_inline_policy(
+            iam.Policy(self, 'mySQLInstLogsPolicy',
+                    statements = [
+                    iam.PolicyStatement(
+                    effect = iam.Effect.ALLOW,
+                    actions = ['logs:CreateLogGroup', 'logs:CreateLogStream', 'logs:PutLogEvents'],
+                    resources = ["arn:aws:logs:" + region + ":" + self.account + ":log-group:*"]
                     )
                 ]))
 
@@ -120,6 +137,15 @@ class EC2InstanceStack(Stack):
                     }
                     )
                 ]))
+        dbt2InstRole.attach_inline_policy(
+            iam.Policy(self, 'dbt2InstLogsPolicy',
+                    statements = [
+                    iam.PolicyStatement(
+                    effect = iam.Effect.ALLOW,
+                    actions = ['logs:CreateLogGroup', 'logs:CreateLogStream', 'logs:PutLogEvents'],
+                    resources = ["arn:aws:logs:" + region + ":" + self.account + ":log-group:*"]
+                    )
+                ]))        
 
         #Security Group for DBT2 instance
         sg_dbt2 = ec2.SecurityGroup(
@@ -154,8 +180,7 @@ class EC2InstanceStack(Stack):
             description="SSH access"
         )        
 
-        kp_mysql = ec2.CfnKeyPair(self, "MySQLCfnKeyPair", key_name=mySQLAppName+'MySQLCfnKeyPair')
-        #kp_pem = ssm.StringParameter.value_for_secure_string_parameter(self,kp_mysql.attr_key_pair_id,1)
+        kp_mysql = ec2.CfnKeyPair(self, "MySQLCfnKeyPair", key_name='MySQLCfnKeyPair'+mySQLAppName)
 
         # mySQL Instance
         mySQLInstance = ec2.Instance(self, "MySQLInstance",
@@ -167,29 +192,34 @@ class EC2InstanceStack(Stack):
             key_name=kp_mysql.key_name,
             block_devices=[
                 ec2.BlockDevice(device_name="/dev/xvda",volume=ec2.BlockDeviceVolume.ebs(100,delete_on_termination=True,volume_type=ec2.EbsDeviceVolumeType.GP3)),
-                ec2.BlockDevice(device_name="/dev/sda1",volume=ec2.BlockDeviceVolume.ebs(volSize,delete_on_termination=True,iops=volIOPS,volume_type=volType))
+                # ec2.BlockDevice(device_name="/dev/sda1",volume=ec2.BlockDeviceVolume.ebs(volSize,delete_on_termination=True,volume_type=volType))
             ],
             role = mySQLInstRole
             )
-
-        # ec2.Instance has no property of BlockDeviceMappings, add via lower layer cdk api:
-        # mySQLInstance.instance.add_property_override("BlockDeviceMappings", [{
-        #     "DeviceName": "/dev/xvda",
-        #     "Ebs": {
-        #         "VolumeSize": "30",
-        #         "VolumeType": "gp3",
-        #         "DeleteOnTermination": "true"
-        #     }
-        # }, {
-        #     "DeviceName": "/dev/sda1",
-        #     "Ebs": {
-        #         "VolumeSize": "50",
-        #         "VolumeType": "io1",
-        #         "Iops": "150",
-        #         "DeleteOnTermination": "true"
-        #     }
-        # }
-        # ])
+        
+        if volType == ec2.EbsDeviceVolumeType.GP2:
+            mySQLInstance.instance.add_property_override("BlockDeviceMappings", [
+                {
+                    "DeviceName": "/dev/sda1",
+                    "Ebs": {
+                        "VolumeSize": volSize,
+                        "VolumeType": volType,
+                        "DeleteOnTermination": "true"
+                    }
+                }
+            ])
+        else:
+            mySQLInstance.instance.add_property_override("BlockDeviceMappings", [
+                {
+                    "DeviceName": "/dev/sda1",
+                    "Ebs": {
+                        "VolumeSize": volSize,
+                        "VolumeType": volType,
+                        "Iops": volIOPS,
+                        "DeleteOnTermination": "true"
+                    }
+                }
+            ])
 
         # Script in S3 as Asset
         asset = Asset(self, "mySQLAsset", path=os.path.join(dirname, "user-data-mysql-instance.sh"))
@@ -231,26 +261,34 @@ class EC2InstanceStack(Stack):
             )
         asset.grant_read(dbt2Instance.role)
 
-        # mysqlRootkey = kms.Key(self, "MySQLRootKMS")
-        # mysqlBenchmarkerkey = kms.Key(self, "MySQLBenchmarkerKMS")
-        # mysql_root_secret = secretsmanager.Secret(self, "MySQLRootSecret", generate_secret_string=secretsmanager.SecretStringGenerator(exclude_punctuation=False,exclude_characters="'\\/\"`$;,|:\{\}\[\]\(\)\<\>&"), encryption_key=mysqlRootkey,)
-        # mysql_benchmarker_secret = secretsmanager.Secret(self, "MySQLBenchmarkerSecret", generate_secret_string=secretsmanager.SecretStringGenerator(exclude_punctuation=False,exclude_characters="'\\/\"`$;,|:\{\}\[\]\(\)\<\>&"), encryption_key=mysqlBenchmarkerkey)
+        # Create S3 bucket to share artifacts
+        s3_bucket = s3.Bucket(self, 'S3Bucket'+mySQLAppName, bucket_name=mySQLAppName+'-artifacts', versioned=True)
+        s3_bucket.grant_read_write(mySQLInstance.role)
+        s3_bucket.grant_read_write(dbt2Instance.role)
+
+        env_var_filename = envName.replace(' ', "-") + '.env_vars'
+        env_var_filename = env_var_filename.lower()
+        autobench_conf_filename = envName.replace(' ', "-")+'-'+autobenchConf
+        autobench_conf_filename = autobench_conf_filename.lower()
         
-        # mysql_root_secret.grant_read(mySQLInstance.role)
-        # mysql_benchmarker_secret.grant_read(mySQLInstance.role)
-        # mysql_benchmarker_secret.grant_read(dbt2Instance.role)
+        s3deploy.BucketDeployment(self, 'S3BucketDeployment'+mySQLAppName,
+            sources=[s3deploy.Source.asset(os.path.join(dirname, 'env_files'))],
+            exclude=['**'],
+            include=[env_var_filename,autobench_conf_filename],
+            destination_bucket=s3_bucket,
+            access_control=s3.BucketAccessControl.PRIVATE,
+        )        
 
         #Cloudformation Outputs
-        CfnOutput(self, 'vpcId', value=vpc.vpc_id, export_name=mySQLAppName+'ExportedVpcId')
-        CfnOutput(self, "mySQLInstId", value=mySQLInstance.instance_id, export_name=mySQLAppName+'ExportedMySQLInstId')
-        CfnOutput(self, "mySQLPrivIP", value=mySQLInstance.instance_private_ip, export_name=mySQLAppName+'ExportedMySQLPrivIP')
-        CfnOutput(self, "dbt2InstId", value=dbt2Instance.instance_id, export_name=mySQLAppName+'ExportedDBT2InstId')
-        CfnOutput(self, "dbt2PrivIP", value=dbt2Instance.instance_private_ip, export_name=mySQLAppName+'ExportedDBT2PrivIP')        
-        # CfnOutput(self, "mysqlRootSecret", value=mysql_root_secret.secret_name, export_name=mySQLAppName+'ExportedMySQLRootSecret')
-        # CfnOutput(self, "mysqlBenchmarkerSecret", value=mysql_benchmarker_secret.secret_name, export_name=mySQLAppName+'ExportedMySQLBenchmarkerSecret')
-        CfnOutput(self,"mysqlRegion",value=self.region, export_name=mySQLAppName+'ExportedMySQLRegion')
-        #CfnOutput(self, "sgId", value=sg_mysql.security_group_id, export_name=mySQLAppName+'ExportedSgId')
-        CfnOutput(self,"keyPairId", value=kp_mysql.attr_key_pair_id, export_name=mySQLAppName+'ExportedKeyPairId')
+        CfnOutput(self, 'vpcId', value=vpc.vpc_id, export_name='ExportedVpcId'+mySQLAppName)
+        CfnOutput(self, "mySQLInstId", value=mySQLInstance.instance_id, export_name='ExportedMySQLInstId'+mySQLAppName)
+        CfnOutput(self, "mySQLPrivIP", value=mySQLInstance.instance_private_ip, export_name='ExportedMySQLPrivIP'+mySQLAppName)
+        CfnOutput(self, "dbt2InstId", value=dbt2Instance.instance_id, export_name='ExportedDBT2InstId'+mySQLAppName)
+        CfnOutput(self, "dbt2PrivIP", value=dbt2Instance.instance_private_ip, export_name='ExportedDBT2PrivIP'+mySQLAppName)
+        CfnOutput(self, "instArch", value=ec2.InstanceType(instType).architecture.value, export_name='ExportedInstArch'+mySQLAppName)
+        CfnOutput(self, "s3BucketName", value=s3_bucket.bucket_name, export_name='ExportedS3BucketName'+mySQLAppName)
+        CfnOutput(self,"mysqlRegion",value=region, export_name='ExportedMySQLRegion'+mySQLAppName)
+        CfnOutput(self,"keyPairId", value=kp_mysql.attr_key_pair_id, export_name='ExportedKeyPairId'+mySQLAppName)
         
 app = App()
 EC2InstanceStack(app, mySQLAppName)
