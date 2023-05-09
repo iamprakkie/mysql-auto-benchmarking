@@ -14,13 +14,13 @@
 1. Configure required environments in `env-config.yaml`. Here is a sample configuration
     ```yaml
     environments:
-    - name: "r5.8xlarge gp3 Environment" # give a unique name
+      - name: "r5.8xlarge gp3 Environment" # give a unique name
         region: "us-west-2" # region where env need to be deployed
         instancetype: "r5.8xlarge" # type of instance
         volumetype: "gp3" # gp2, gp3, io1 or io2
         volumesize: 500 # volume size in GB
         iops: 3000 # iops will be used only for gp3, io1 and io2 volume types
-        autobenchconf: "fine-tuned-sysbench-autobench.conf" # autobench conf file name
+        autobenchconf: "fine-tuned-sysbench-autobench.conf" # autobench conf file name        
     ```
 
     >**NOTE: Only X86_64 architecture is supported currently.**

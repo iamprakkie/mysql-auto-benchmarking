@@ -107,7 +107,7 @@ ln -s /mysql-data/mysql-data-dir /home/ssm-user/bench/mysql-data-dir
 # echo "downloaded env-files"
 
 #clone repo
-git clone -b multi-env https://github.com/iamprakkie/mysql-auto-benchmarking.git /home/ssm-user/mysql-auto-benchmarking
+git clone https://github.com/iamprakkie/mysql-auto-benchmarking.git /home/ssm-user/mysql-auto-benchmarking
 
 echo "cloned repo"
 
