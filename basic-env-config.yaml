@@ -1,0 +1,16 @@
+# Configure required environment values for benchmarking
+environments:
+  - name: "r5.8xlarge gp2 environment"
+    region: "us-east-2"
+    instancetype: "r5.8xlarge"
+    volumetype: "gp2"
+    volumesize: 500
+    autobenchconf: "basic-sysbench-autobench.conf"
+  - name: "r5.8xlarge gp3 environment"
+    region: "us-east-2"
+    instancetype: "r5.8xlarge"
+    volumetype: "gp3"
+    volumesize: 500
+    iops: 3000 # iops will be used only for gp3, io1 and io2 volume types.
+    autobenchconf: "basic-sysbench-autobench.conf"
+  
