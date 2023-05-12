@@ -56,7 +56,6 @@ class EC2InstanceStack(Stack):
         vpc = ec2.Vpc(self, "VPC",
             enable_dns_hostnames = True,
             enable_dns_support = True,
-            region = region,
             subnet_configuration=[ec2.SubnetConfiguration(name="public",subnet_type=ec2.SubnetType.PUBLIC,cidr_mask = 24)]
             )
         
@@ -77,7 +76,6 @@ class EC2InstanceStack(Stack):
         amzn_linux = ec2.MachineImage.latest_amazon_linux2(
             edition=ec2.AmazonLinuxEdition.STANDARD,
             cpu_type=ec2.AmazonLinuxCpuType.X86_64,
-            region =region,
             )       
             
         # Instance Role and SSM Managed Policy for MySQL instance
@@ -154,7 +152,6 @@ class EC2InstanceStack(Stack):
             self,
             id="dbt2-sg",
             vpc=vpc,
-            region = region,
             allow_all_outbound=True,
             description="Security group of DBT2 instance",
             security_group_name = "dbt2-sg"
@@ -165,7 +162,6 @@ class EC2InstanceStack(Stack):
             self,
             id="mysql-access-sg",
             vpc=vpc,
-            region = region,
             allow_all_outbound=True,
             description="Allow access to 3316 only from security group of DBT2 instance",
             security_group_name = "mysql-access-sg"
@@ -191,7 +187,6 @@ class EC2InstanceStack(Stack):
             instance_type=ec2.InstanceType(instance_type_identifier=instType),
             machine_image=amzn_linux,
             vpc=vpc,
-            region=region,
             vpc_subnets=ec2.SubnetSelection(subnets=[ec2.Subnet.from_subnet_attributes(self,"mySQLPublicSubnet",subnet_id=publicSubnetId,availability_zone=az_lookup[publicSubnetId])]),
             security_group=sg_mysql,
             key_name=kp_mysql.key_name,
@@ -230,8 +225,7 @@ class EC2InstanceStack(Stack):
         asset = Asset(self, "mySQLAsset", path=os.path.join(dirname, "user-data-mysql-instance.sh"))
         local_path = mySQLInstance.user_data.add_s3_download_command(
             bucket=asset.bucket,
-            bucket_key=asset.s3_object_key,
-            region=region
+            bucket_key=asset.s3_object_key
         )
 
         # Userdata executes script from S3
@@ -245,7 +239,6 @@ class EC2InstanceStack(Stack):
             instance_type=ec2.InstanceType(instance_type_identifier=instType),
             machine_image=amzn_linux,
             vpc=vpc,
-            region=region,
             vpc_subnets=ec2.SubnetSelection(subnets=[ec2.Subnet.from_subnet_attributes(self,"dbt2PublicSubnet",subnet_id=publicSubnetId,availability_zone=az_lookup[publicSubnetId])]),
             security_group=sg_dbt2,
             block_devices=[
@@ -259,8 +252,7 @@ class EC2InstanceStack(Stack):
         asset = Asset(self, "dbt2Asset", path=os.path.join(dirname, "user-data-dbt2-instance.sh"))
         local_path = dbt2Instance.user_data.add_s3_download_command(
             bucket=asset.bucket,
-            bucket_key=asset.s3_object_key,
-            region=region
+            bucket_key=asset.s3_object_key
         )
 
         # Userdata executes script from S3
@@ -270,7 +262,7 @@ class EC2InstanceStack(Stack):
         asset.grant_read(dbt2Instance.role)
 
         # Create S3 bucket to share artifacts
-        s3_bucket = s3.Bucket(self, 'S3Bucket'+mySQLAppName, bucket_name=mySQLAppName+'-artifacts', versioned=True, region=region)
+        s3_bucket = s3.Bucket(self, 'S3Bucket'+mySQLAppName, bucket_name=mySQLAppName+'-artifacts', versioned=True)
         s3_bucket.grant_read_write(mySQLInstance.role)
         s3_bucket.grant_read_write(dbt2Instance.role)
 
@@ -285,7 +277,6 @@ class EC2InstanceStack(Stack):
             include=[env_var_filename,autobench_conf_filename],
             destination_bucket=s3_bucket,
             access_control=s3.BucketAccessControl.PRIVATE,
-            region=region
         )        
 
         #Cloudformation Outputs

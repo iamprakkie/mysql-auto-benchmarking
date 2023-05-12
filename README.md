@@ -33,12 +33,9 @@
     python3 -m venv .venv
     source .venv/bin/activate
     python3 -m pip install --upgrade pip
-    pip install -r requirements.txt
-    export MY_ACCOUNT_ID=$(aws sts get-caller-identity --query 'Account' --output text)
-    export AWS_REGION="us-east-2"
-    cdk bootstrap aws://${MY_ACCOUNT_ID}/${AWS_REGION}
+    pip install -r requirements.txt   
+    cdk bootstrap
     python deploy-env.py
-    # python deploy-env.py [basic-env-config.yaml] # optionally specify config file name. By default, it picks up env-config.yaml
     ```
     >**NOTE:** deploy-env script looks for .done files in env_files dir and when found, skips respective environment.
 
@@ -53,16 +50,13 @@
 1. Run autobenchmark using below mentioned command:
     ```bash
     python autobench-sysbench.py
-    # python autobench-sysbench.py [basic-env-config.yaml] # optionally specify config file name. By default, it picks up env-config.yaml
     ```
 
 ## Clean up
 
-- Cleanup all environments using below mentioned commands:
-
+Cleanup all environments using below mentioned commands:
     ```bash
     python cleanup-env.py
-    # python cleanup-env.py [basic-env-config.yaml] # optionally specify config file name. By default, it picks up env-config.yaml
-    python delete-artifacts-buckets.py    
+    python delete-artifacts-buckets.py
     deactivate
     ```
