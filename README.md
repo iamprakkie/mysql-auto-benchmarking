@@ -35,7 +35,7 @@
     python3 -m pip install --upgrade pip
     pip install -r requirements.txt
     export MY_ACCOUNT_ID=$(aws sts get-caller-identity --query 'Account' --output text)
-    export AWS_REGION="us-east-2"
+    export AWS_REGION="us-west-2"
     cdk bootstrap aws://${MY_ACCOUNT_ID}/${AWS_REGION}
     python deploy-env.py
     # python deploy-env.py [basic-env-config.yaml] # optionally specify config file name. By default, it picks up env-config.yaml
