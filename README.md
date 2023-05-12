@@ -66,4 +66,3 @@
     python delete-artifacts-buckets.py    
     deactivate
     ```
----
