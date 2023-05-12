@@ -41,16 +41,10 @@ S3_BUCKET_NAME=$(aws cloudformation describe-stacks --region $MYREGION --stack-n
 INST_ARCH=$(aws cloudformation describe-stacks --region $MYREGION --stack-name $BENCHMARK_NAME --query "Stacks[][].Outputs[?OutputKey=='instArch'].OutputValue" --output text)
 echo "instance architecture is $INST_ARCH"
 
-if [ $INST_ARCH == "ARM_64" ]; then
-    curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
-    unzip awscliv2.zip
-    sudo ./aws/install
-# for x86_64 or other values of INST_ARCH    
-else 
-    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" 
-    unzip awscliv2.zip
-    sudo ./aws/install
-fi
+
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" 
+unzip awscliv2.zip
+sudo ./aws/install
 
 echo "aws cli v2 installed"
 aws --version
