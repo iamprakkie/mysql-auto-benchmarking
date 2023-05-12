@@ -34,9 +34,9 @@
     source .venv/bin/activate
     python3 -m pip install --upgrade pip
     pip install -r requirements.txt
-    export MY_ACCOUNT_ID=$(aws sts get-caller-identity --query 'Account' --output text)
-    export AWS_REGION="us-west-2"
-    cdk bootstrap aws://${MY_ACCOUNT_ID}/${AWS_REGION}
+    export CDK_DEPLOY_ACCOUNT=$(aws sts get-caller-identity --query 'Account' --output text)
+    export CDK_DEPLOY_REGION="us-west-2"
+    cdk bootstrap aws://${CDK_DEPLOY_ACCOUNT}/${CDK_DEPLOY_REGION}
     python deploy-env.py
     # python deploy-env.py [basic-env-config.yaml] # optionally specify config file name. By default, it picks up env-config.yaml
     ```
