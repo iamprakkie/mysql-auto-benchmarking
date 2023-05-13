@@ -22,8 +22,8 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-def run_ssm_command(ssm_command,comment):
-    ssm = boto3.client('ssm')
+def run_ssm_command(ssm_command,region, comment):
+    ssm = boto3.client('ssm', region_name=region)
     reponse = ssm.send_command(
             InstanceIds=dbt2InstIds,
             DocumentName='AWS-RunShellScript',
@@ -85,7 +85,9 @@ print(f"{bcolors.HEADER}Autobenchmarking Environments using sysbench as configur
 
 for env in envs:
     # Checking for supported architecture
-    ec2 = boto3.client('ec2')
+    region = env['region']
+    print(region)
+    ec2 = boto3.client('ec2', region_name=region)
     response = ec2.describe_instance_types(InstanceTypes=[env['instancetype']])
     architecture = response['InstanceTypes'][0]['ProcessorInfo']['SupportedArchitectures'][0]
 
@@ -120,7 +122,8 @@ for env in envs:
     # print(f"\t{bcolors.OKORANGE}autobench conf file: {os.path.join(os.path.dirname(__file__), 'env_files',  autobench_conf_filename)}{bcolors.ENDC}")
 
     # get DBT2 instance ID from a cloudformation stack
-    cfn = boto3.client('cloudformation')
+    print(region)
+    cfn = boto3.client('cloudformation', region_name=region)
     stack_name = existing_env['BENCHMARK_NAME']
     stack_output = cfn.describe_stacks(StackName=stack_name)
     stack_outputs = stack_output['Stacks'][0]['Outputs']
@@ -135,19 +138,18 @@ print(f"\t{bcolors.OKORANGE}DBT2 instance ID(s): {dbt2InstIds}{bcolors.ENDC}")
 
 print(f"\n{bcolors.OKBLUE}Setting up DBT2 instance(s) for sysbench..{bcolors.ENDC}")
 ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env-files/*.env_vars; cd /home/ssm-user/mysql-auto-benchmarking; bash ./setup-dbt2-instance-for-sysbench.sh'"
-run_ssm_command(ssm_command,'Setting up DBT2 instances for sysbench')
+run_ssm_command(ssm_command, region, 'Setting up DBT2 instances for sysbench')
 
 print(f"\n{bcolors.OKBLUE}Initialzing sysbench..{bcolors.ENDC}")
 ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env-files/*.env_vars; cd /home/ssm-user/mysql-auto-benchmarking; bash ./init-sysbench.sh'"
-run_ssm_command(ssm_command,'Intializing sysbench')
-
+run_ssm_command(ssm_command, region, 'Intializing sysbench')
 
 print(f"\n{bcolors.OKBLUE}Running sysbench..{bcolors.ENDC}")
 ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env-files/*.env_vars; cd /home/ssm-user/mysql-auto-benchmarking; bash ./run-sysbench.sh'"
-run_ssm_command(ssm_command,'Running sysbench')
+run_ssm_command(ssm_command, region, 'Running sysbench')
 
 print(f"\n{bcolors.OKBLUE}Uploading sysbench results to S3 bucket..{bcolors.ENDC}")
 ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env-files/*.env_vars; cd /home/ssm-user/mysql-auto-benchmarking; bash ./upload-sysbench-results.sh'"
-run_ssm_command(ssm_command,'Uploading sysbench results to S3 bucket')
+run_ssm_command(ssm_command, region, 'Uploading sysbench results to S3 bucket')
 
 print(f"\n{bcolors.OKGREEN}AUTOBENCHMARKING COMPLETE!!{bcolors.ENDC}")

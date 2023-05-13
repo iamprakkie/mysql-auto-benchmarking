@@ -7,7 +7,7 @@ from aws_cdk import (
     aws_iam as iam,
     aws_s3 as s3,
     aws_s3_deployment as s3deploy,
-    App, Stack, CfnOutput 
+    App, Stack, CfnOutput, Environment
 )
 
 class bcolors:
@@ -34,6 +34,8 @@ volIOPS = int(os.getenv("MYSQL_VOL_IOPS", 150))
 inputVolType = str(os.getenv("MYSQL_VOL_TYPE", "gp3"))
 autobenchConf = str(os.getenv("MYSQL_AUTOBENCH_CONF", "fine-tuned-sysbench-autobench.conf"))
 envName = str(os.getenv("BENCHMARK_ENV_NAME", "MySQLAutoBenchmarking"))
+
+
 
 if inputVolType.lower() == 'gp2':
     volType = ec2.EbsDeviceVolumeType.GP2
@@ -291,5 +293,9 @@ class EC2InstanceStack(Stack):
         CfnOutput(self,"keyPairId", value=kp_mysql.attr_key_pair_id, export_name='ExportedKeyPairId'+mySQLAppName)
         
 app = App()
-EC2InstanceStack(app, mySQLAppName)
+# EC2InstanceStack(app, mySQLAppName)
+EC2InstanceStack(app, mySQLAppName,
+    env=Environment(
+        region=region,
+    )) 
 app.synth()
