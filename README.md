@@ -22,6 +22,7 @@
         iops: 3000 # iops will be used only for gp3, io1 and io2 volume types
         autobenchconf: "fine-tuned-sysbench-autobench.conf" # autobench conf file name        
     ```
+    Each environment will have its own VPC. Check and confirm your Service quota for VPC.
 
     >**NOTE: Only X86_64 architecture is supported currently.**
 
