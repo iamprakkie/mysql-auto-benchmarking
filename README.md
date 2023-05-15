@@ -65,10 +65,9 @@
 ## Clean up
 
 Cleanup all environments using below mentioned commands:
-
-    ```bash
-    python cleanup-env.py
-    # python cleanup-env.py [basic-env-config.yaml] # optionally specify config file name. By default, it picks up env-config.yaml
-    python delete-artifacts-buckets.py
-    deactivate
-    ```
+```bash
+python cleanup-env.py
+# python cleanup-env.py [basic-env-config.yaml] # optionally specify config file name. By default, it picks up env-config.yaml
+python delete-artifacts-buckets.py
+deactivate
+```
