@@ -56,9 +56,16 @@
     # python autobench-sysbench.py [basic-env-config.yaml] # optionally specify config file name. By default, it picks up env-config.yaml
     ```
 
+1. Download autobench results using below mentioned command:
+    ```bash
+    python download-artifacts.py
+    ```
+    This script will download contents of all buckets that start with `autobech` and ends with `-artifacts`. All contents will be downloaded into directory named `autobench_results`.
+
 ## Clean up
 
 Cleanup all environments using below mentioned commands:
+
     ```bash
     python cleanup-env.py
     # python cleanup-env.py [basic-env-config.yaml] # optionally specify config file name. By default, it picks up env-config.yaml
