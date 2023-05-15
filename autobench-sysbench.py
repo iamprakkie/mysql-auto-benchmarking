@@ -86,7 +86,6 @@ print(f"{bcolors.HEADER}Autobenchmarking Environments using sysbench as configur
 for env in envs:
     # Checking for supported architecture
     region = env['region']
-    print(region)
     ec2 = boto3.client('ec2', region_name=region)
     response = ec2.describe_instance_types(InstanceTypes=[env['instancetype']])
     architecture = response['InstanceTypes'][0]['ProcessorInfo']['SupportedArchitectures'][0]
@@ -122,7 +121,6 @@ for env in envs:
     # print(f"\t{bcolors.OKORANGE}autobench conf file: {os.path.join(os.path.dirname(__file__), 'env_files',  autobench_conf_filename)}{bcolors.ENDC}")
 
     # get DBT2 instance ID from a cloudformation stack
-    print(region)
     cfn = boto3.client('cloudformation', region_name=region)
     stack_name = existing_env['BENCHMARK_NAME']
     stack_output = cfn.describe_stacks(StackName=stack_name)
