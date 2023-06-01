@@ -1,7 +1,7 @@
 
-# Auto Benchmarking of MySQL 8 running on EC2 instances using Sysbench. Create EC2 instances in new VPC using CDK, access them using SSM and run DBT2 sysbench auto benchmark.
+# Auto Benchmarking of MySQL 8 running on EC2 instances using Sysbench
 
-This project helps you auto-benchmark MySQL v8.0 with sysbench simultaneously in multiple environments. Configure environment with required instance type, volume type, volume size, IOPS, region and then simply run benchmarking. You can define multiple benchmarking parameters and use them in required environments.
+This project simplifies and automates benchmarking MySQL v8.0 with sysbench simultaneously in multiple environments. Configure environment with required instance type, volume type, volume size, IOPS, region and then simply run benchmarking. You can define multiple benchmarking parameters and use them in required environments. All environments are created in its own VPC using CDK and access provided through AWS Systems Manager(SSM).
 
 ## Usage
 
