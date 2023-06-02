@@ -3,6 +3,12 @@
 
 This project simplifies and automates benchmarking MySQL v8.0 with sysbench simultaneously in multiple environments. Configure environment with required instance type, volume type, volume size, IOPS, region and then simply run benchmarking. You can define multiple benchmarking parameters and use them in required environments. All environments are created in its own VPC using [AWS CDK](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html) and access provided through [AWS Systems Manager (SSM)](https://aws.amazon.com/systems-manager/).
 
+## Solution Overview
+
+Here is a functional flow of this solution:
+
+![mysql-auto-benchmarking](./mysql-auto-benchmarking.jpg)
+
 ## Usage
 
 1. Clone this repository
