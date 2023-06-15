@@ -57,7 +57,7 @@ Here is a functional flow of this solution:
     sh ./connect-to-dbt2-instance.sh
     ```
 
-    <!-- In similar, you can connect to MYSQL instance using `./connect-to-mysql-instance.sh` script. -->
+    In similar, you can connect to MYSQL instance using `./connect-to-mysql-instance.sh` script.
 
 1. Run autobenchmark using below mentioned command:
     ```bash
