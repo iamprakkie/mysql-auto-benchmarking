@@ -31,6 +31,10 @@ log 'O' "proceeding.."
 
 log 'G-H' "Setting up DBT2 instance for running sysbench.."
 
+# get region
+MYREGION=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/placement/region)
+aws configure set region $MYREGION
+
 #create required dirs
 mkdir -p /home/ssm-user/bench /home/ssm-user/bench/mysql # benchmarking dir. Ensure autobench.conf reflects this configuration.
 mkdir -p /home/ssm-user/bench/tarballs # Location where tar.gz of MySQL, DBT2 and Sysbench will be placed. Ensure autobench.conf and setup_dbt2.sh reflects this configuration.
@@ -46,6 +50,9 @@ tar xfz /home/ssm-user/bench/tarballs/mysql-cluster-8.0.32-el7-x86_64.tar.gz -C 
 
 #unpacking DBT2
 tar xfz /home/ssm-user/bench/tarballs/dbt2-0.37.50.16.tar.gz -C /home/ssm-user/bench/tarballs/
+
+# download autobench conf file from artifacts bucket. This is to use updated config with every run.
+aws s3 cp --region $MYREGION s3://${S3_BUCKET_NAME}/`basename $BENCHMARK_ENV_FILENAME .env_vars`"-"${MYSQL_AUTOBENCH_CONF} /home/ssm-user/bench/env-files
 
 #copy required files
 cp /home/ssm-user/bench/tarballs/dbt2-0.37.50.16/scripts/bench_run.sh /home/ssm-user/bench/

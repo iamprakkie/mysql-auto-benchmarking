@@ -101,7 +101,6 @@ for env in envs:
     autobench_conf_filename = env['name'].replace(' ', "-")+'-'+env['autobenchconf']
     autobench_conf_filename = autobench_conf_filename.lower()
 
-
     # dictionary for existing env
     existing_env={}
 
@@ -120,6 +119,14 @@ for env in envs:
     # print(f"\t{bcolors.OKORANGE}env_vars file: {os.path.join(os.path.dirname(__file__), 'env_files', env_var_filename)}{bcolors.ENDC}")
     # print(f"\t{bcolors.OKORANGE}autobench conf file: {os.path.join(os.path.dirname(__file__), 'env_files',  autobench_conf_filename)}{bcolors.ENDC}")
 
+    # re-upload autobench conf file to artifacts bucket. This is to use updated config with every run.
+    s3 = boto3.client('s3', region_name=region)
+    bucket_name = existing_env['BENCHMARK_NAME']+"-artifacts"
+    print(f"\n{bcolors.OKBLUE}Uploading {env['autobenchconf']} to artifacts bucket: {bucket_name}{bcolors.ENDC}")
+    s3.upload_file(os.path.join(os.path.dirname(__file__), env['autobenchconf']), bucket_name, autobench_conf_filename)
+    # Copy autobench conf file to local env_files folder
+    os.system('cp ' + os.path.join(os.path.dirname(__file__), env['autobenchconf']) + ' ' + os.path.join(os.path.dirname(__file__), 'env_files', autobench_conf_filename))
+
     # get DBT2 instance ID from a cloudformation stack
     cfn = boto3.client('cloudformation', region_name=region)
     stack_name = existing_env['BENCHMARK_NAME']
@@ -132,7 +139,7 @@ for env in envs:
             dbt2InstId = output['OutputValue']
             dbt2InstIds.append(dbt2InstId)
 
-print(f"\t{bcolors.OKORANGE}DBT2 instance ID(s): {dbt2InstIds}{bcolors.ENDC}")
+print(f"\n\t{bcolors.OKORANGE}DBT2 instance ID(s): {dbt2InstIds}{bcolors.ENDC}")
 
 print(f"\n{bcolors.OKBLUE}Setting up DBT2 instance(s) for sysbench..{bcolors.ENDC}")
 ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env-files/*.env_vars; cd /home/ssm-user/mysql-auto-benchmarking; bash ./setup-dbt2-instance-for-sysbench.sh'"

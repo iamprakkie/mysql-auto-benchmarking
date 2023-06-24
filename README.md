@@ -19,6 +19,8 @@ Here is a functional flow of this solution:
 
 1. Modify `autobench.conf` as required. You can refer to sample files `fine-tuned-sysbench-autobench.conf` or `basic-sysbench-autobench.conf`.
 
+1. Latest configuration in autobench conf file will be picked by every run of `autobench-sysbech.py`. This enables you to iterate benchmark with different configurations.
+
 1. Configure required environments in `env-config.yaml`. Here is a sample configuration
     ```yaml
     environments:
