@@ -52,10 +52,10 @@ tar xfz /home/ssm-user/bench/tarballs/mysql-cluster-8.0.32-el7-x86_64.tar.gz -C 
 tar xfz /home/ssm-user/bench/tarballs/dbt2-0.37.50.16.tar.gz -C /home/ssm-user/bench/tarballs/
 
 # download autobench conf file from artifacts bucket. This is to use updated config with every run.
-aws s3 cp --region $MYREGION s3://${S3_BUCKET_NAME}/`basename $BENCHMARK_ENV_FILENAME .env_vars`"-"${MYSQL_AUTOBENCH_CONF} /home/ssm-user/bench/env-files
+aws s3 cp --region $MYREGION s3://${S3_BUCKET_NAME}/`basename $BENCHMARK_ENV_FILENAME .env_vars`"-"${MYSQL_AUTOBENCH_CONF} /home/ssm-user/bench/env_files
 
 #copy required files
 cp /home/ssm-user/bench/tarballs/dbt2-0.37.50.16/scripts/bench_run.sh /home/ssm-user/bench/
-cp /home/ssm-user/bench/env-files/`basename $BENCHMARK_ENV_FILENAME .env_vars`"-"${MYSQL_AUTOBENCH_CONF} /home/ssm-user/bench/sysbench/autobench.conf
+cp /home/ssm-user/bench/env_files/`basename $BENCHMARK_ENV_FILENAME .env_vars`"-"${MYSQL_AUTOBENCH_CONF} /home/ssm-user/bench/sysbench/autobench.conf
 
 log 'G' "DBT2 setup COMPLETE. Verify values in /home/ssm-user/bench/sysbench/autobench.conf"

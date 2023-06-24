@@ -96,9 +96,9 @@ mkdir -p /mysql-data/mysql-data-dir # MySQL data directory. This is the location
 ln -s /mysql-data/mysql-data-dir /home/ssm-user/bench/mysql-data-dir
 
 # Download env-file from S3 bucket
-# aws s3 cp --region $MYREGION s3://${S3_BUCKET_NAME}/ /home/ssm-user/bench/env-files/ --recursive
+# aws s3 cp --region $MYREGION s3://${S3_BUCKET_NAME}/ /home/ssm-user/bench/env_files/ --recursive
 
-# echo "downloaded env-files"
+# echo "downloaded env_files"
 
 #clone repo
 git clone https://github.com/iamprakkie/mysql-auto-benchmarking.git /home/ssm-user/mysql-auto-benchmarking

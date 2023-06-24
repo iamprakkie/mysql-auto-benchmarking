@@ -142,19 +142,19 @@ for env in envs:
 print(f"\n\t{bcolors.OKORANGE}DBT2 instance ID(s): {dbt2InstIds}{bcolors.ENDC}")
 
 print(f"\n{bcolors.OKBLUE}Setting up DBT2 instance(s) for sysbench..{bcolors.ENDC}")
-ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env-files/*.env_vars; cd /home/ssm-user/mysql-auto-benchmarking; bash ./setup-dbt2-instance-for-sysbench.sh'"
+ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env_files/*.env_vars; cd /home/ssm-user/mysql-auto-benchmarking; bash ./setup-dbt2-instance-for-sysbench.sh'"
 run_ssm_command(ssm_command, region, 'Setting up DBT2 instances for sysbench')
 
 print(f"\n{bcolors.OKBLUE}Initialzing sysbench..{bcolors.ENDC}")
-ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env-files/*.env_vars; cd /home/ssm-user/mysql-auto-benchmarking; bash ./init-sysbench.sh'"
+ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env_files/*.env_vars; cd /home/ssm-user/mysql-auto-benchmarking; bash ./init-sysbench.sh'"
 run_ssm_command(ssm_command, region, 'Intializing sysbench')
 
 print(f"\n{bcolors.OKBLUE}Running sysbench..{bcolors.ENDC}")
-ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env-files/*.env_vars; cd /home/ssm-user/mysql-auto-benchmarking; bash ./run-sysbench.sh'"
+ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env_files/*.env_vars; cd /home/ssm-user/mysql-auto-benchmarking; bash ./run-sysbench.sh'"
 run_ssm_command(ssm_command, region, 'Running sysbench')
 
 print(f"\n{bcolors.OKBLUE}Uploading sysbench results to S3 bucket..{bcolors.ENDC}")
-ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env-files/*.env_vars; cd /home/ssm-user/mysql-auto-benchmarking; bash ./upload-sysbench-results.sh'"
+ssm_command = "su ssm-user --shell bash -c 'source /etc/profile.d/custom-envs.sh; source /home/ssm-user/bench/env_files/*.env_vars; cd /home/ssm-user/mysql-auto-benchmarking; bash ./upload-sysbench-results.sh'"
 run_ssm_command(ssm_command, region, 'Uploading sysbench results to S3 bucket')
 
 print(f"\n{bcolors.OKGREEN}AUTOBENCHMARKING COMPLETE!!{bcolors.ENDC}")

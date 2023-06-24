@@ -112,9 +112,9 @@ mkdir -p /home/ssm-user/bench/tarballs # Location where tar.gz of MySQL, DBT2 an
 mkdir -p /home/ssm-user/bench/sysbench # sysbench dir. This is also default-directory. Ensure autobench.conf reflects this configuration.
 
 # Download env-file from S3 bucket
-aws s3 cp --region $MYREGION s3://${S3_BUCKET_NAME}/ /home/ssm-user/bench/env-files/ --recursive
+aws s3 cp --region $MYREGION s3://${S3_BUCKET_NAME}/ /home/ssm-user/bench/env_files/ --recursive
 
-echo "downloaded env-files"
+echo "downloaded env_files"
 
 # change ownership
 chown -R ssm-user:ssm-user /home/ssm-user/bench
