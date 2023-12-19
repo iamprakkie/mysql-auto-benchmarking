@@ -89,7 +89,7 @@ for env in envs:
         fw.write('export MYSQL_AUTOBENCH_CONF=' + env['autobenchconf'] + '\n')
         fw.write('export BENCHMARK_ENV_NAME="' + env['name'] + '"\n')
         fw.write('export BENCHMARK_ENV_FILENAME=' + env_var_filename + '\n')
-    
+
     # Close the file
     fw.close()
     print(f"\t{bcolors.OKORANGE}env_vars file: {fw.name}{bcolors.ENDC}")
@@ -110,8 +110,19 @@ for env in envs:
         'BENCHMARK_ENV_FILENAME': str(env_var_filename)
     }
 
-    print(f"\t{bcolors.OKORANGE}CDK deployment in progress...{bcolors.ENDC}")
-    cdk_command = "cdk deploy --require-approval never --color=always"
+    # cdk_command = "cdk deploy --require-approval never --color=always"
+# cdk command with profile from AWS_PROFILE. If not found exit
+    try:
+        cdk_command = "cdk deploy --require-approval never --profile " + os.environ['AWS_PROFILE'] + " --color=always"
+    except KeyError:
+        print(f"{bcolors.FAIL}AWS_PROFILE environment variable not found. Exiting..{bcolors.ENDC}")
+        exit()
+
+    env_vars['AWS_PROFILE'] = os.environ['AWS_PROFILE']
+
+    print(f"\t{bcolors.OKORANGE}CDK command: {cdk_command}{bcolors.ENDC}")
+    print(f"\t{bcolors.OKORANGE}Autobench config file: {autobench_conf_filename}{bcolors.ENDC}")
+    print(f"\n\t{bcolors.OKORANGE}CDK deployment in progress...{bcolors.ENDC}")
 
     # Issue with stdout for cdk: https://github.com/aws/aws-cdk/issues/5552
     process = subprocess.Popen(cdk_command, shell=True, env=env_vars, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
