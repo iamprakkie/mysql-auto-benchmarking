@@ -86,7 +86,11 @@ for env in envs:
         'BENCHMARK_ENV_NAME': existing_env['BENCHMARK_ENV_NAME']
     }
 
-    cdk_command = "cdk destroy --force --color=always"
+    if 'AWS_PROFILE' in os.environ:
+        cdk_command = "cdk destroy --force --color=always --profile " + os.environ['AWS_PROFILE']
+        env_vars['AWS_PROFILE'] = os.environ['AWS_PROFILE']
+    else:
+        cdk_command = "cdk destroy --force --color=always"
 
     process = subprocess.Popen(cdk_command, shell=True, env=env_vars, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     print(process.stdout.read().decode('utf-8'))

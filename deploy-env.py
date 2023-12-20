@@ -110,10 +110,6 @@ for env in envs:
         'BENCHMARK_ENV_FILENAME': str(env_var_filename)
     }
 
-    # cdk_command = "cdk deploy --require-approval never --color=always"
-# cdk command with profile from AWS_PROFILE. If not found exit
-
-# do the below only if AWS_PROFILE is set
     if 'AWS_PROFILE' in os.environ:
         cdk_command = "cdk deploy --require-approval never --profile " + os.environ['AWS_PROFILE'] + " --color=always"
         env_vars['AWS_PROFILE'] = os.environ['AWS_PROFILE']
