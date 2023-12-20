@@ -17,7 +17,7 @@ git clone https://github.com/iamprakkie/mysql-auto-benchmarking.git
 cd mysql-auto-benchmarking
 ```
 
-2. Set environment variable `AWS_PROFILE` with AWS profile name where you want to deploy resources.
+2. Optionally, set environment variable `AWS_PROFILE` with AWS profile name where you want to deploy resources.
 
 ```bash {"id":"01HJ1Z3R9JJ2TZJ9A0CXQA4ZH3"}
 export AWS_PROFILE=<AWS profile name>
