@@ -112,13 +112,13 @@ for env in envs:
 
     # cdk_command = "cdk deploy --require-approval never --color=always"
 # cdk command with profile from AWS_PROFILE. If not found exit
-    try:
-        cdk_command = "cdk deploy --require-approval never --profile " + os.environ['AWS_PROFILE'] + " --color=always"
-    except KeyError:
-        print(f"{bcolors.FAIL}AWS_PROFILE environment variable not found. Exiting..{bcolors.ENDC}")
-        exit()
 
-    env_vars['AWS_PROFILE'] = os.environ['AWS_PROFILE']
+# do the below only if AWS_PROFILE is set
+    if 'AWS_PROFILE' in os.environ:
+        cdk_command = "cdk deploy --require-approval never --profile " + os.environ['AWS_PROFILE'] + " --color=always"
+        env_vars['AWS_PROFILE'] = os.environ['AWS_PROFILE']
+    else:
+        cdk_command = "cdk deploy --require-approval never --color=always"
 
     print(f"\t{bcolors.OKORANGE}CDK command: {cdk_command}{bcolors.ENDC}")
     print(f"\t{bcolors.OKORANGE}Autobench config file: {autobench_conf_filename}{bcolors.ENDC}")
