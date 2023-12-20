@@ -13,7 +13,7 @@ Here is a functional flow of this solution:
 1. Clone this repository
 
 ```bash {"id":"01HJ1D1S6RDA8214G2BKEM4J75"}
-git clone git@ssh.gitlab.aws.dev:amazon-builders-guild/mysql-auto-benchmarking.git
+git clone https://github.com/iamprakkie/mysql-auto-benchmarking.git
 cd mysql-auto-benchmarking
 ```
 
